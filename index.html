@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Arte Pharmaceutica — Farmácia de manipulação premium em São José dos Pinhais desde 2001.">
+  <meta property="og:title" content="Arte Pharmaceutica | Farmácia de Manipulação">
+  <meta property="og:description" content="25 anos de excelência em manipulação farmacêutica. Matriz e filial.">
+  <meta property="og:type" content="website">
+  <title>Arte Pharmaceutica | Farmácia de Manipulação</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="nav" id="navbar">
+  <a href="#inicio" class="nav-logo" aria-label="Arte Pharmaceutica">
+    <img src="images/logo-taca.png" alt="Arte Pharmaceutica" class="nav-logo-img" width="120" height="50">
+  </a>
+  <ul class="nav-links">
+    <li><a href="#inicio">Início</a></li>
+    <li><a href="#historia">História</a></li>
+    <li><a href="#logistica">Logística</a></li>
+    <li><a href="#campeoes">Campeões</a></li>
+    <li><a href="#servicos">Especialidades</a></li>
+    <li><a href="#depoimentos">Depoimentos</a></li>
+    <li><a href="#contato">Contato</a></li>
+    <li><a href="#" data-instagram>Instagram</a></li>
+    <li><a href="#" data-wa="matriz" class="nav-cta">WhatsApp</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Abrir menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="#inicio" onclick="closeMenu()">Início</a>
+  <a href="#historia" onclick="closeMenu()">História</a>
+  <a href="#logistica" onclick="closeMenu()">Logística</a>
+  <a href="#campeoes" onclick="closeMenu()">Campeões</a>
+  <a href="#servicos" onclick="closeMenu()">Especialidades</a>
+  <a href="#depoimentos" onclick="closeMenu()">Depoimentos</a>
+  <a href="#contato" onclick="closeMenu()">Contato</a>
+  <a href="#" data-instagram onclick="closeMenu()">Instagram</a>
+  <a href="#" data-wa="matriz" class="nav-cta" onclick="closeMenu()">WhatsApp</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-parallax" data-parallax="0.12" aria-hidden="true"></div>
+  <div class="hero-glow" data-parallax="0.2" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <p class="eyebrow reveal">Manipulação de alto padrão — desde 2001</p>
+    <h1 class="hero-title reveal">A precisão de uma fórmula feita <em>só para você</em></h1>
+    <p class="hero-lead reveal">Tradição, discrição e excelência técnica em cada manipulação. Duas unidades em São José dos Pinhais para quem exige o melhor em saúde personalizada.</p>
+    <div class="hero-cta reveal">
+      <a href="#" data-wa="matriz" class="btn btn-gold">Falar no WhatsApp</a>
+      <a href="#" data-loja class="btn btn-ghost">Explorar loja online</a>
+    </div>
+  </div>
+  <div class="hero-scroll" aria-hidden="true"><span></span></div>
+</section>
+
+<div class="parallax-band" data-parallax-bg aria-hidden="true">
+  <div class="parallax-band-inner">
+    <span class="stat-float reveal"><strong>25</strong> anos</span>
+    <span class="stat-float reveal"><strong>2</strong> unidades</span>
+    <span class="stat-float reveal"><strong>4</strong> especialidades</span>
+    <span class="stat-float reveal">desde <strong>2001</strong></span>
+  </div>
+</div>
+
+<!-- LOGÍSTICA -->
+<section class="logistica" id="logistica">
+  <div class="wrap">
+    <p class="eyebrow reveal">Logística</p>
+    <h2 class="title reveal">Comodidade em cada etapa</h2>
+    <ul class="logistica-grid">
+      <li class="logistica-item reveal">
+        <span class="logistica-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25"><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8"/><path d="M13 16h4l3-4V8a1 1 0 00-1-1h-6"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="17.5" cy="17.5" r="1.5"/></svg>
+        </span>
+        <h3>Entrega Rápida</h3>
+        <p>Receba seus produtos em até <strong>48h</strong>, com a agilidade que sua rotina exige.</p>
+      </li>
+      <li class="logistica-item reveal">
+        <span class="logistica-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1H4a1 1 0 01-1-1V9z"/><path d="M9 21V12h6v9"/></svg>
+        </span>
+        <h3>Retirada Conveniente</h3>
+        <p>Retire na matriz ou filial com processo prático, rápido e sem burocracia.</p>
+      </li>
+      <li class="logistica-item reveal">
+        <span class="logistica-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+        </span>
+        <h3>Entrega Agendada</h3>
+        <p>Agende a entrega conforme sua disponibilidade e receba no melhor horário.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- IMAGENS REAIS -->
+<section class="vitrine-real" aria-labelledby="vitrine-real-title">
+  <div class="wrap vitrine-real-wrap">
+    <p class="eyebrow reveal" id="vitrine-real-title">Nosso espaço</p>
+    <h2 class="title reveal">Ambiente pensado para você</h2>
+    <div class="real-floats">
+      <figure class="float-photo float-photo--wide reveal" data-parallax="0.14">
+        <img src="images/interior-farmacia.png" alt="Interior da farmácia Arte Pharmaceutica" loading="lazy">
+      </figure>
+      <figure class="float-photo float-photo--product reveal" data-parallax="0.22">
+        <img src="images/keranat.png" alt="Produto Keranat 150mg manipulado na Arte Pharmaceutica" loading="lazy">
+      </figure>
+    </div>
+    <p class="real-badge reveal">
+      <span class="real-badge-dot" aria-hidden="true"></span>
+      Imagens reais de nossas instalações e produtos
+    </p>
+  </div>
+</section>
+
+<div class="parallax-band parallax-band--light" data-parallax-bg aria-hidden="true"></div>
+
+<!-- HISTÓRIA -->
+<section class="historia" id="historia">
+  <div class="wrap historia-wrap">
+    <div class="historia-copy">
+      <p class="eyebrow reveal">Nossa História</p>
+      <h2 class="title reveal">Um quarto de século<br>cuidando com rigor</h2>
+      <p class="body reveal">A Arte Pharmaceutica nasceu em 2001 com um propósito claro: oferecer fórmulas manipuladas com precisão técnica e atendimento verdadeiramente humano.</p>
+      <p class="body reveal">Hoje, com matriz e filial, equipe especializada e laboratório de ponta, seguimos referência em homeopatia, dermatologia, veterinária e cosméticos manipulados.</p>
+      <blockquote class="pullquote reveal">
+        <p>Cada fórmula preparada sob medida — com os melhores insumos e total responsabilidade farmacêutica.</p>
+      </blockquote>
+    </div>
+    <div class="historia-depth reveal">
+      <div class="depth-plane depth-plane--1" data-parallax="0.08" aria-hidden="true"></div>
+      <figure class="depth-photo float-photo" data-parallax="0.18">
+        <img src="images/interior-farmacia.png" alt="Recepção da Arte Pharmaceutica" loading="lazy">
+      </figure>
+      <div class="depth-plane depth-plane--2" data-parallax="0.28" aria-hidden="true"></div>
+      <span class="depth-year" data-parallax="0.35">2001</span>
+    </div>
+  </div>
+</section>
+
+<!-- FALCÃO -->
+<section class="campeoes" id="campeoes">
+  <div class="wrap campeoes-wrap">
+    <figure class="campeoes-photo float-photo reveal" data-parallax="0.16">
+      <img src="images/falcao.png" alt="Falcão — atleta de futsal" loading="lazy">
+    </figure>
+    <div class="campeoes-quote reveal">
+      <p class="eyebrow">Escolha dos Campeões</p>
+      <blockquote>
+        <p>A precisão e a qualidade da Arte Pharmaceutica são fundamentais para o meu desempenho e recuperação. Recomendo para quem busca o melhor.</p>
+      </blockquote>
+      <p class="assinatura">Falcão</p>
+      <span class="assinatura-role">Ídolo do Futsal Mundial</span>
+    </div>
+  </div>
+</section>
+
+<!-- ESPECIALIDADES -->
+<section class="servicos" id="servicos">
+  <div class="wrap">
+    <p class="eyebrow reveal">Especialidades</p>
+    <h2 class="title reveal">O que manipulamos</h2>
+    <ul class="servicos-list">
+      <li class="servico-row reveal">
+        <span class="servico-num">01</span>
+        <div>
+          <h3>Homeopáticos</h3>
+          <p>Fórmulas personalizadas com matérias-primas certificadas e rigor na individualidade de cada paciente.</p>
+        </div>
+      </li>
+      <li class="servico-row reveal">
+        <span class="servico-num">02</span>
+        <div>
+          <h3>Dermatológicos</h3>
+          <p>Cremes, séruns e loções sob prescrição, com alta eficácia e segurança para a pele.</p>
+        </div>
+      </li>
+      <li class="servico-row reveal">
+        <span class="servico-num">03</span>
+        <div>
+          <h3>Veterinários</h3>
+          <p>Dosagens ajustadas para pets e animais de grande porte, com precisão farmacêutica.</p>
+        </div>
+      </li>
+      <li class="servico-row reveal">
+        <span class="servico-num">04</span>
+        <div>
+          <h3>Cosméticos</h3>
+          <p>Ativos de alto desempenho: antienvelhecimento, clareadores e tratamentos capilares exclusivos.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section class="depoimentos" id="depoimentos">
+  <div class="wrap">
+    <p class="eyebrow reveal">Prova social</p>
+    <h2 class="title reveal">Depoimentos</h2>
+    <div class="carousel reveal" id="depoimentosCarousel">
+      <div class="carousel-track" id="carouselTrack">
+        <article class="testimonial-card">
+          <div class="testimonial-avatar" aria-hidden="true"></div>
+          <div class="testimonial-stars" aria-label="5 estrelas">★★★★★</div>
+          <h3 class="testimonial-name">Mariana Costa</h3>
+          <p class="testimonial-text">Atendimento impecável e fórmulas que realmente fizeram diferença no meu tratamento dermatológico.</p>
+        </article>
+        <article class="testimonial-card">
+          <div class="testimonial-avatar" aria-hidden="true"></div>
+          <div class="testimonial-stars" aria-label="5 estrelas">★★★★★</div>
+          <h3 class="testimonial-name">Roberto Almeida</h3>
+          <p class="testimonial-text">Confiança total na equipe. Retirada rápida e orientação farmacêutica de alto nível.</p>
+        </article>
+        <article class="testimonial-card">
+          <div class="testimonial-avatar" aria-hidden="true"></div>
+          <div class="testimonial-stars" aria-label="5 estrelas">★★★★★</div>
+          <h3 class="testimonial-name">Patrícia Mendes</h3>
+          <p class="testimonial-text">Uso os manipulados da Arte há anos. Qualidade consistente e entrega sempre dentro do prazo.</p>
+        </article>
+        <article class="testimonial-card">
+          <div class="testimonial-avatar" aria-hidden="true"></div>
+          <div class="testimonial-stars" aria-label="5 estrelas">★★★★★</div>
+          <h3 class="testimonial-name">Dr. Henrique Lima</h3>
+          <p class="testimonial-text">Indico aos meus pacientes pela precisão técnica e transparência em cada prescrição magistral.</p>
+        </article>
+      </div>
+      <div class="carousel-controls">
+        <button type="button" class="carousel-btn" id="carouselPrev" aria-label="Depoimento anterior">←</button>
+        <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="Depoimentos"></div>
+        <button type="button" class="carousel-btn" id="carouselNext" aria-label="Próximo depoimento">→</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARCAS -->
+<section class="marcas" id="marcas" aria-label="Marcas parceiras">
+  <div class="wrap">
+    <p class="eyebrow reveal">Parceiros</p>
+    <h2 class="title reveal">Marcas que trabalhamos</h2>
+  </div>
+  <div class="marquee reveal" aria-hidden="true">
+    <div class="marquee-track">
+      <img src="images/brands/brand-1.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-2.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-3.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-4.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-5.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-6.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-7.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-8.png" alt="Marca parceira" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-1.png" alt="" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-2.png" alt="" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-3.png" alt="" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-4.png" alt="" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-5.png" alt="" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-6.png" alt="" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-7.png" alt="" class="brand-logo" loading="lazy">
+      <img src="images/brands/brand-8.png" alt="" class="brand-logo" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICAÇÕES -->
+<section class="certificacoes" id="certificacoes">
+  <div class="wrap cert-wrap">
+    <p class="eyebrow reveal">Credibilidade</p>
+    <h2 class="title reveal">Selos de certificação</h2>
+    <p class="cert-lead reveal">Compromisso com normas técnicas, rastreabilidade e farmacêutico responsável em cada etapa.</p>
+    <ul class="selos">
+      <li class="selo reveal" data-parallax="0.06">
+        <span class="selo-ring" aria-hidden="true"></span>
+        <span class="selo-label">ANVISA</span>
+        <span class="selo-desc">Boas práticas regulatórias</span>
+      </li>
+      <li class="selo reveal" data-parallax="0.1">
+        <span class="selo-ring" aria-hidden="true"></span>
+        <span class="selo-label">CRF-PR</span>
+        <span class="selo-desc">Farmacêutico responsável</span>
+      </li>
+      <li class="selo reveal" data-parallax="0.08">
+        <span class="selo-ring" aria-hidden="true"></span>
+        <span class="selo-label">BPF</span>
+        <span class="selo-desc">Boas práticas de manipulação</span>
+      </li>
+      <li class="selo reveal" data-parallax="0.12">
+        <span class="selo-ring" aria-hidden="true"></span>
+        <span class="selo-label">Desde 2001</span>
+        <span class="selo-desc">Tradição e confiança</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<div class="parallax-band parallax-band--gold" data-parallax-bg aria-hidden="true"></div>
+
+<!-- CONTATO -->
+<section class="contato" id="contato">
+  <div class="wrap">
+    <p class="eyebrow reveal">Onde estamos</p>
+    <h2 class="title reveal">Matriz e filial</h2>
+    <div class="unidades-fluid">
+      <article class="unidade reveal">
+        <h3 class="unidade-tag">Matriz</h3>
+        <address>Rua Dona Izabel A Redentora, 2076 — Centro<br>São José dos Pinhais - PR, 83005-010</address>
+        <a href="tel:+5541991694197" class="unidade-tel">(41) 9169-4197</a>
+        <div class="unidade-links">
+          <a href="#" data-wa="matriz" class="link-gold">WhatsApp Matriz</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=Rua+Dona+Izabel+A+Redentora+2076+São+José+dos+Pinhais" class="link-subtle" target="_blank" rel="noopener">Mapa</a>
+        </div>
+      </article>
+      <span class="unidade-divider" aria-hidden="true"></span>
+      <article class="unidade reveal">
+        <h3 class="unidade-tag">Filial</h3>
+        <address>Rua Visconde do Rio Branco, 1945 — Centro<br>São José dos Pinhais - PR</address>
+        <a href="tel:+5541991366263" class="unidade-tel">(41) 99136-6263</a>
+        <div class="unidade-links">
+          <a href="#" data-wa="filial" class="link-gold">WhatsApp Filial</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=Rua+Visconde+do+Rio+Branco+1945+São+José+dos+Pinhais" class="link-subtle" target="_blank" rel="noopener">Mapa</a>
+        </div>
+      </article>
+    </div>
+    <div class="contato-aside reveal">
+      <a href="#" data-loja class="link-subtle">artepharmaceutica.com</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <a href="#" data-instagram class="link-subtle">Instagram</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <span class="horario">Seg–Sex 8h–19h · Sáb 8h–13h</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap footer-wrap">
+    <a href="#inicio" class="footer-brand" aria-label="Arte Pharmaceutica">
+      <img src="images/logo-taca.png" alt="" class="footer-logo-img" width="100" height="42" loading="lazy">
+    </a>
+    <p class="footer-tagline">Farmácia de manipulação · São José dos Pinhais</p>
+    <nav class="footer-nav" aria-label="Rodapé">
+      <a href="#historia">História</a>
+      <a href="#logistica">Logística</a>
+      <a href="#campeoes">Campeões</a>
+      <a href="#servicos">Especialidades</a>
+      <a href="#depoimentos">Depoimentos</a>
+      <a href="#contato">Contato</a>
+      <a href="#" data-instagram>Instagram</a>
+      <a href="#" data-loja>Loja</a>
+    </nav>
+    <a href="#" data-wa="matriz" class="footer-wa">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Iniciar conversa no WhatsApp
+    </a>
+    <p class="footer-copy">© 2026 Arte Pharmaceutica. Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<a href="#" data-wa="matriz" class="wa-float" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script src="script.js"></script>
+</body>
+</html>
