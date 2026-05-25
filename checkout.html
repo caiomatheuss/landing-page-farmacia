@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | Arte Pharmaceutica</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="checkout-page">
+
+<header class="checkout-header">
+  <a href="index.html" class="checkout-back">← Voltar à loja</a>
+  <a href="index.html" class="checkout-logo">
+    <img src="images/logo-arte.png" alt="Arte Pharmaceutica" height="44">
+  </a>
+</header>
+
+<main class="checkout-main wrap">
+  <h1 class="checkout-title">Finalizar pedido</h1>
+  <p class="checkout-lead">Revise seus itens. O pagamento é concluído com nossa equipe via WhatsApp — rápido, seguro e personalizado.</p>
+
+  <div class="checkout-layout">
+    <section class="checkout-cart" aria-labelledby="cart-heading">
+      <h2 id="cart-heading">Seu carrinho</h2>
+      <ul id="checkoutItems" class="checkout-items"></ul>
+      <p id="checkoutEmpty" class="checkout-empty" hidden>Seu carrinho está vazio. <a href="index.html#showroom">Ver produtos</a></p>
+    </section>
+
+    <aside class="checkout-summary">
+      <h2>Resumo</h2>
+      <div class="checkout-line">
+        <span>Subtotal</span>
+        <span id="checkoutSubtotal" class="checkout-amount">R$ 0,00</span>
+      </div>
+      <div class="checkout-line checkout-line--note">
+        <span>Entrega / retirada</span>
+        <span>A combinar</span>
+      </div>
+      <div class="checkout-line checkout-line--total">
+        <span>Total estimado</span>
+        <span id="checkoutTotal" class="checkout-amount">R$ 0,00</span>
+      </div>
+      <a href="#" id="checkoutWhatsApp" class="btn btn-gold checkout-wa-btn" data-wa="matriz">
+        Finalizar via WhatsApp
+      </a>
+      <p class="checkout-hint">Um farmacêutico confirma valores, prazo e forma de pagamento.</p>
+      <a href="index.html#contato" class="link-subtle checkout-alt">Prefere falar com a filial?</a>
+    </aside>
+  </div>
+</main>
+
+<script src="store.js"></script>
+<script>
+  const CART_KEY = 'arte-pharma-cart';
+  const MATRIZ_PHONE = '5541991694197';
+
+  function formatPrice(v) {
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function loadCart() {
+    try {
+      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function renderCheckout() {
+    const cart = loadCart();
+    const list = document.getElementById('checkoutItems');
+    const empty = document.getElementById('checkoutEmpty');
+    const subtotalEl = document.getElementById('checkoutSubtotal');
+    const totalEl = document.getElementById('checkoutTotal');
+    const waBtn = document.getElementById('checkoutWhatsApp');
+
+    if (!cart.length) {
+      list.innerHTML = '';
+      empty.hidden = false;
+      subtotalEl.textContent = formatPrice(0);
+      totalEl.textContent = formatPrice(0);
+      waBtn.classList.add('is-disabled');
+      waBtn.href = '#';
+      return;
+    }
+
+    empty.hidden = true;
+    let total = 0;
+    list.innerHTML = cart
+      .map((item) => {
+        const p = PRODUCTS.find((x) => x.id === item.id);
+        if (!p) return '';
+        const line = p.price * item.qty;
+        total += line;
+        return `<li class="checkout-item">
+          <img src="${p.image}" alt="" width="56" height="56">
+          <div>
+            <strong>${p.name}</strong>
+            <span class="checkout-item-qty">${item.qty} un.</span>
+          </div>
+          <span class="checkout-amount">${formatPrice(line)}</span>
+        </li>`;
+      })
+      .join('');
+
+    subtotalEl.textContent = formatPrice(total);
+    totalEl.textContent = formatPrice(total);
+
+    const msg = buildCartWhatsAppMessage(cart);
+    waBtn.href = `https://wa.me/${MATRIZ_PHONE}?text=${encodeURIComponent(msg)}`;
+    waBtn.target = '_blank';
+    waBtn.rel = 'noopener noreferrer';
+    waBtn.classList.remove('is-disabled');
+  }
+
+  document.addEventListener('DOMContentLoaded', renderCheckout);
+</script>
+</body>
+</html>

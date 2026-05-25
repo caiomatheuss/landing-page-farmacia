@@ -76,6 +76,7 @@ const revealObserver = new IntersectionObserver(
 );
 
 document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+window.revealObserver = revealObserver;
 
 // Parallax — elementos e faixas de transição
 const parallaxItems = document.querySelectorAll('[data-parallax]');
