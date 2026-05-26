@@ -1012,7 +1012,7 @@
               </div>
             </div>
 
-            <!-- CPF e CEP -->
+             <!-- CPF e CEP -->
             <div class="co-field-group">
               <div class="co-field" id="fieldCpf">
                 <label class="co-label" for="inputCpf">CPF *</label>
@@ -1025,6 +1025,53 @@
                 <input class="co-input" type="text" id="inputCep" name="cep"
                   placeholder="00000-000" maxlength="9" inputmode="numeric" required>
                 <span class="co-error-msg">CEP inválido (8 dígitos)</span>
+              </div>
+            </div>
+
+            <!-- Rua e Número -->
+            <div class="co-field-group">
+              <div class="co-field" id="fieldRua">
+                <label class="co-label" for="inputRua">Rua / Logradouro *</label>
+                <input class="co-input" type="text" id="inputRua" name="rua"
+                  placeholder="Preenchido automaticamente pelo CEP" autocomplete="street-address" required>
+                <span class="co-error-msg">Informe o logradouro</span>
+              </div>
+              <div class="co-field" id="fieldNumero">
+                <label class="co-label" for="inputNumero">Número *</label>
+                <input class="co-input" type="text" id="inputNumero" name="numero"
+                  placeholder="Ex: 123" inputmode="numeric" required>
+                <span class="co-error-msg">Informe o número</span>
+              </div>
+            </div>
+
+            <!-- Complemento e Bairro -->
+            <div class="co-field-group">
+              <div class="co-field">
+                <label class="co-label" for="inputComplemento">Complemento</label>
+                <input class="co-input" type="text" id="inputComplemento" name="complemento"
+                  placeholder="Apto, Bloco, Casa… (opcional)" autocomplete="address-line2">
+              </div>
+              <div class="co-field" id="fieldBairro">
+                <label class="co-label" for="inputBairro">Bairro *</label>
+                <input class="co-input" type="text" id="inputBairro" name="bairro"
+                  placeholder="Preenchido automaticamente" required>
+                <span class="co-error-msg">Informe o bairro</span>
+              </div>
+            </div>
+
+            <!-- Cidade e Estado -->
+            <div class="co-field-group">
+              <div class="co-field" id="fieldCidade">
+                <label class="co-label" for="inputCidade">Cidade *</label>
+                <input class="co-input" type="text" id="inputCidade" name="cidade"
+                  placeholder="Preenchido automaticamente" required>
+                <span class="co-error-msg">Informe a cidade</span>
+              </div>
+              <div class="co-field" id="fieldEstado">
+                <label class="co-label" for="inputEstado">Estado *</label>
+                <input class="co-input" type="text" id="inputEstado" name="estado"
+                  placeholder="Ex: PR" maxlength="2" style="text-transform:uppercase" required>
+                <span class="co-error-msg">Informe o estado</span>
               </div>
             </div>
 
@@ -1362,7 +1409,7 @@
        CARRINHO — Lê do localStorage (store.js)
     ════════════════════════════════════════════ */
     // Tabela de preços — igual ao store.js
-    
+
 const PRODUCTS_PRICES = {
   'curcuma-500':   { name: 'Cúrcuma 500mg',         price: 89,  img: 'images/products/curcuma-500mg.png' },
   'kit-unhas':     { name: 'Kit Cuidado Para Unhas', price: 149, img: 'images/products/kit-unhas.png' },
@@ -1494,7 +1541,7 @@ function loadCart() {
     /* ════════════════════════════════════════════
        VALIDAÇÃO — Etapa 1
     ════════════════════════════════════════════ */
-    function validateStep1() {
+     function validateStep1() {
       let valid = true;
 
       function check(fieldId, inputId, testFn) {
@@ -1506,11 +1553,16 @@ function loadCart() {
         if (!ok) valid = false;
       }
 
-      check('fieldNome', 'inputNome', v => v.length >= 3 && v.includes(' '));
-      check('fieldEmail', 'inputEmail', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
-      check('fieldTelefone', 'inputTelefone', v => v.replace(/\D/g, '').length >= 10);
-      check('fieldCpf', 'inputCpf', v => v.replace(/\D/g, '').length === 11);
-      check('fieldCep', 'inputCep', v => v.replace(/\D/g, '').length === 8);
+      check('fieldNome',    'inputNome',    v => v.length >= 3 && v.includes(' '));
+      check('fieldEmail',   'inputEmail',   v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+      check('fieldTelefone','inputTelefone',v => v.replace(/\D/g, '').length >= 10);
+      check('fieldCpf',     'inputCpf',     v => v.replace(/\D/g, '').length === 11);
+      check('fieldCep',     'inputCep',     v => v.replace(/\D/g, '').length === 8);
+      check('fieldRua',     'inputRua',     v => v.length >= 3);
+      check('fieldNumero',  'inputNumero',  v => v.length >= 1);
+      check('fieldBairro',  'inputBairro',  v => v.length >= 2);
+      check('fieldCidade',  'inputCidade',  v => v.length >= 2);
+      check('fieldEstado',  'inputEstado',  v => v.length === 2);
 
       return valid;
     }
@@ -1563,13 +1615,34 @@ function loadCart() {
         });
       }
 
-      // Validade: MM/AA
+        // Validade: MM/AA
       const exp = document.getElementById('inputCardExp');
       if (exp) {
         exp.addEventListener('input', () => {
           let v = exp.value.replace(/\D/g, '').substring(0, 4);
           if (v.length > 2) v = v.replace(/(\d{2})(\d{2})/, '$1/$2');
           exp.value = v;
+        });
+      }
+
+      // CEP → busca endereço via ViaCEP
+      const cepInput = document.getElementById('inputCep');
+      if (cepInput) {
+        cepInput.addEventListener('blur', async () => {
+          const nums = cepInput.value.replace(/\D/g, '');
+          if (nums.length !== 8) return;
+          try {
+            const res  = await fetch(`https://viacep.com.br/ws/${nums}/json/`);
+            const data = await res.json();
+            if (data.erro) return;
+            const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+            set('inputRua',    data.logradouro);
+            set('inputBairro', data.bairro);
+            set('inputCidade', data.localidade);
+            set('inputEstado', data.uf);
+            // Foca no campo número para o usuário completar
+            document.getElementById('inputNumero')?.focus();
+          } catch { /* silencia erro de rede */ }
         });
       }
     }
@@ -1680,12 +1753,18 @@ function loadCart() {
           e.preventDefault();
           if (validateStep1()) {
             // Salva dados do formulário
-            state.formData = {
-              nome:     document.getElementById('inputNome')?.value,
-              email:    document.getElementById('inputEmail')?.value,
-              telefone: document.getElementById('inputTelefone')?.value,
-              cpf:      document.getElementById('inputCpf')?.value,
-              cep:      document.getElementById('inputCep')?.value,
+               state.formData = {
+              nome:        document.getElementById('inputNome')?.value,
+              email:       document.getElementById('inputEmail')?.value,
+              telefone:    document.getElementById('inputTelefone')?.value,
+              cpf:         document.getElementById('inputCpf')?.value,
+              cep:         document.getElementById('inputCep')?.value,
+              rua:         document.getElementById('inputRua')?.value,
+              numero:      document.getElementById('inputNumero')?.value,
+              complemento: document.getElementById('inputComplemento')?.value,
+              bairro:      document.getElementById('inputBairro')?.value,
+              cidade:      document.getElementById('inputCidade')?.value,
+              estado:      document.getElementById('inputEstado')?.value,
             };
             goToStep(2);
           }
