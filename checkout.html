@@ -7,116 +7,1713 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ══════════════════════════════════════════════
+       CHECKOUT — Arte Pharmaceutica
+       Variáveis já herdadas do style.css principal
+    ══════════════════════════════════════════════ */
+
+    /* ── Reset de página ── */
+    .co-page {
+      background: var(--off);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .co-header {
+      background: var(--navy);
+      padding: 1.25rem clamp(1.5rem, 6vw, 3rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .co-header-logo img {
+      height: 52px;
+      width: auto;
+      filter: brightness(0) invert(1);
+    }
+
+    .co-header-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .co-header-back:hover { color: var(--gold-light); }
+
+    .co-header-back svg { flex-shrink: 0; }
+
+    /* ── Stepper ── */
+    .co-stepper {
+      background: var(--navy);
+      padding: 0 clamp(1.5rem, 6vw, 3rem) 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .co-step {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex: 1;
+      position: relative;
+    }
+
+    .co-step:not(:last-child)::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.12);
+      margin: 0 1rem;
+      transition: background 0.5s;
+    }
+
+    .co-step.is-done:not(:last-child)::after {
+      background: var(--gold-muted);
+    }
+
+    .co-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.4);
+      flex-shrink: 0;
+      transition: border-color 0.4s, color 0.4s, background 0.4s;
+    }
+
+    .co-step.is-active .co-step-num {
+      border-color: var(--gold);
+      color: var(--navy);
+      background: var(--gold);
+    }
+
+    .co-step.is-done .co-step-num {
+      border-color: var(--gold-muted);
+      color: var(--gold);
+      background: transparent;
+    }
+
+    .co-step-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      font-weight: 500;
+      transition: color 0.4s;
+      white-space: nowrap;
+    }
+
+    .co-step.is-active .co-step-label { color: rgba(255,255,255,0.85); }
+    .co-step.is-done .co-step-label { color: var(--gold-muted); }
+
+    /* ── Layout principal ── */
+    .co-main {
+      flex: 1;
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 5vw, 3rem);
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: clamp(2rem, 4vw, 3rem);
+      align-items: start;
+      max-width: 1120px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Formulário / Painel esquerdo ── */
+    .co-form-panel {
+      background: var(--white);
+      border: 1px solid rgba(0,43,91,0.07);
+      box-shadow: 0 12px 48px rgba(0,43,91,0.06);
+    }
+
+    .co-panel-header {
+      padding: 1.75rem 2rem 1.25rem;
+      border-bottom: 1px solid rgba(0,43,91,0.06);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .co-panel-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(197,160,89,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .co-panel-icon svg { color: var(--gold); }
+
+    .co-panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+
+    .co-panel-sub {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      font-weight: 300;
+      margin-top: 0.2rem;
+    }
+
+    .co-form-body {
+      padding: 2rem;
+    }
+
+    /* ── Campos ── */
+    .co-field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .co-field-group.full { grid-template-columns: 1fr; }
+
+    .co-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .co-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .co-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--text);
+      background: var(--off);
+      border: 1px solid rgba(0,43,91,0.12);
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+      border-radius: 2px;
+      -webkit-appearance: none;
+    }
+
+    .co-input::placeholder { color: rgba(90,107,125,0.5); }
+
+    .co-input:focus {
+      border-color: var(--gold);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(197,160,89,0.1);
+    }
+
+    .co-input.is-error {
+      border-color: #e05252;
+      box-shadow: 0 0 0 3px rgba(224,82,82,0.08);
+    }
+
+    .co-error-msg {
+      font-size: 0.7rem;
+      color: #e05252;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      display: none;
+    }
+
+    .co-field.has-error .co-error-msg { display: block; }
+    .co-field.has-error .co-input { border-color: #e05252; }
+
+    /* ── Botão principal ── */
+    .co-btn-primary {
+      width: 100%;
+      padding: 1.1rem 2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: background 0.35s, transform 0.35s, box-shadow 0.35s;
+      margin-top: 0.5rem;
+    }
+
+    .co-btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(197,160,89,0.3);
+    }
+
+    .co-btn-primary:active { transform: translateY(0); }
+
+    .co-btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(0,43,91,0.18);
+      color: var(--navy);
+    }
+
+    .co-btn-secondary:hover {
+      border-color: var(--gold);
+      background: rgba(197,160,89,0.06);
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* ── Seletores de pagamento (Radio Premium) ── */
+    .co-pay-methods {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .co-pay-option {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .co-pay-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .co-pay-label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.25rem;
+      border: 1.5px solid rgba(0,43,91,0.1);
+      background: var(--off);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.35s, background 0.35s, box-shadow 0.35s;
+      user-select: none;
+    }
+
+    .co-pay-option input:checked + .co-pay-label {
+      border-color: var(--gold);
+      background: rgba(197,160,89,0.05);
+      box-shadow: 0 0 0 3px rgba(197,160,89,0.1);
+    }
+
+    .co-pay-radio {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(0,43,91,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.3s;
+    }
+
+    .co-pay-option input:checked + .co-pay-label .co-pay-radio {
+      border-color: var(--gold);
+    }
+
+    .co-pay-radio::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold);
+      transform: scale(0);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .co-pay-option input:checked + .co-pay-label .co-pay-radio::after {
+      transform: scale(1);
+    }
+
+    .co-pay-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .co-pay-icon--card { background: rgba(0,43,91,0.08); }
+    .co-pay-icon--pix  { background: rgba(50,188,173,0.12); }
+    .co-pay-icon--bol  { background: rgba(197,160,89,0.12); }
+
+    .co-pay-text { flex: 1; }
+
+    .co-pay-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+
+    .co-pay-desc {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      font-weight: 300;
+      margin-top: 0.1rem;
+    }
+
+    /* ── Painéis de cada método ── */
+    .co-method-panel {
+      display: none;
+      animation: fadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .co-method-panel.is-active { display: block; }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cartão */
+    .co-card-number-wrap {
+      position: relative;
+    }
+
+    .co-card-flags {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .co-card-flag {
+      width: 30px;
+      height: 20px;
+      border-radius: 3px;
+      background: var(--off-warm);
+      border: 1px solid rgba(0,43,91,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      letter-spacing: 0.04em;
+    }
+
+    .co-parcelas-wrap {
+      position: relative;
+    }
+
+    .co-select {
+      width: 100%;
+      padding: 0.85rem 2.5rem 0.85rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--off);
+      border: 1px solid rgba(0,43,91,0.12);
+      border-radius: 2px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .co-select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(197,160,89,0.1);
+    }
+
+    .co-select-arrow {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-soft);
+    }
+
+    /* PIX */
+    .co-pix-panel {
+      text-align: center;
+      padding: 1.5rem 1rem 0.5rem;
+    }
+
+    .co-pix-qr {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 1.5rem;
+      border-radius: 12px;
+      background: var(--off);
+      border: 1px solid rgba(0,43,91,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .co-pix-qr svg { opacity: 0.18; }
+
+    .co-pix-qr-badge {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .co-pix-qr-badge span {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+
+    .co-pix-key-box {
+      background: var(--off);
+      border: 1px dashed var(--gold-muted);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    .co-pix-key-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    .co-pix-key-value {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--navy);
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .co-btn-pix-copy {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--white);
+      background: #32bcad;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.35s, transform 0.35s, box-shadow 0.35s;
+      margin-bottom: 0.5rem;
+    }
+
+    .co-btn-pix-copy:hover {
+      background: #2aa89a;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(50,188,173,0.3);
+    }
+
+    .co-btn-pix-copy.is-copied { background: var(--navy); }
+
+    .co-pix-feedback {
+      font-size: 0.78rem;
+      color: #32bcad;
+      font-weight: 600;
+      min-height: 1.2em;
+      transition: opacity 0.3s;
+    }
+
+    /* Boleto */
+    .co-boleto-panel {
+      padding: 1.5rem 0 0.5rem;
+    }
+
+    .co-boleto-info {
+      background: rgba(197,160,89,0.06);
+      border: 1px solid var(--gold-muted);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .co-boleto-info svg { flex-shrink: 0; margin-top: 2px; color: var(--gold); }
+
+    .co-boleto-info-text {
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--text-soft);
+      font-weight: 300;
+    }
+
+    .co-boleto-info-text strong {
+      color: var(--navy);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .co-btn-boleto {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--white);
+      background: var(--navy);
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: background 0.35s, transform 0.35s;
+    }
+
+    .co-btn-boleto:hover {
+      background: var(--navy-soft);
+      transform: translateY(-1px);
+    }
+
+    .co-boleto-success {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      background: rgba(50,188,100,0.08);
+      border: 1px solid rgba(50,188,100,0.25);
+      border-radius: 8px;
+      margin-top: 1rem;
+      animation: fadeSlideIn 0.4s ease;
+    }
+
+    .co-boleto-success.is-visible { display: flex; }
+
+    .co-boleto-success-text {
+      font-size: 0.82rem;
+      color: #1a7a48;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    /* Divider de seção */
+    .co-section-divider {
+      height: 1px;
+      background: rgba(0,43,91,0.07);
+      margin: 1.75rem 0;
+    }
+
+    .co-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      margin-bottom: 1.5rem;
+      transition: color 0.3s;
+    }
+
+    .co-back-link:hover { color: var(--navy); }
+
+    /* ── Painel lateral — Resumo ── */
+    .co-summary {
+      position: sticky;
+      top: 2rem;
+    }
+
+    .co-summary-card {
+      background: var(--white);
+      border: 1px solid rgba(0,43,91,0.07);
+      box-shadow: 0 12px 48px rgba(0,43,91,0.06);
+      padding: 1.75rem;
+    }
+
+    .co-summary-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--navy);
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(0,43,91,0.07);
+    }
+
+    .co-summary-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .co-summary-item {
+      display: flex;
+      gap: 0.85rem;
+      align-items: center;
+    }
+
+    .co-summary-item-img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      background: var(--off);
+      border-radius: 4px;
+      flex-shrink: 0;
+      padding: 4px;
+    }
+
+    .co-summary-item-info { flex: 1; }
+
+    .co-summary-item-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+
+    .co-summary-item-qty {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      font-weight: 300;
+    }
+
+    .co-summary-item-price {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--navy);
+      white-space: nowrap;
+    }
+
+    .co-summary-divider {
+      height: 1px;
+      background: rgba(0,43,91,0.07);
+      margin: 1.25rem 0;
+    }
+
+    .co-summary-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      padding: 0.35rem 0;
+    }
+
+    .co-summary-line--total {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(0,43,91,0.1);
+    }
+
+    .co-summary-line--total span:last-child {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .co-summary-secure {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      background: var(--off);
+      border-radius: 4px;
+    }
+
+    .co-summary-secure span {
+      font-size: 0.68rem;
+      color: var(--text-soft);
+      font-weight: 400;
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+    }
+
+    .co-empty-cart {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .co-empty-cart p {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      color: var(--text-soft);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Confirmação final ── */
+    .co-confirm-panel {
+      display: none;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .co-confirm-panel.is-active { display: block; }
+
+    .co-confirm-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(50,188,100,0.1);
+      border: 1px solid rgba(50,188,100,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+
+    .co-confirm-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.75rem;
+    }
+
+    .co-confirm-text {
+      font-size: 0.92rem;
+      color: var(--text-soft);
+      line-height: 1.8;
+      font-weight: 300;
+      max-width: 28rem;
+      margin: 0 auto 2rem;
+    }
+
+    /* ── Footer ── */
+    .co-footer {
+      background: var(--navy);
+      padding: 1.5rem clamp(1.5rem, 6vw, 3rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .co-footer p {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.06em;
+    }
+
+    .co-footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .co-footer-links a {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      transition: color 0.3s;
+    }
+
+    .co-footer-links a:hover { color: var(--gold-light); }
+
+    /* ── Responsivo ── */
+    @media (max-width: 900px) {
+      .co-main {
+        grid-template-columns: 1fr;
+      }
+
+      .co-summary {
+        position: static;
+        order: -1;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .co-field-group {
+        grid-template-columns: 1fr;
+      }
+
+      .co-stepper {
+        gap: 0;
+      }
+
+      .co-step-label { display: none; }
+
+      .co-panel-header { padding: 1.25rem 1.25rem 1rem; }
+      .co-form-body { padding: 1.25rem; }
+      .co-summary-card { padding: 1.25rem; }
+    }
+
+    /* ── Utilitários ── */
+    .u-hidden { display: none !important; }
+  </style>
 </head>
-<body class="checkout-page">
 
-<header class="checkout-header">
-  <a href="index.html" class="checkout-back">← Voltar à loja</a>
-  <a href="index.html" class="checkout-logo">
-    <img src="images/logo-arte.png" alt="Arte Pharmaceutica" height="44">
-  </a>
-</header>
+<body class="co-page">
 
-<main class="checkout-main wrap">
-  <h1 class="checkout-title">Finalizar pedido</h1>
-  <p class="checkout-lead">Revise seus itens. O pagamento é concluído com nossa equipe via WhatsApp — rápido, seguro e personalizado.</p>
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header class="co-header">
+    <a href="index.html" class="co-header-back" aria-label="Voltar para a loja">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Voltar à loja
+    </a>
+    <a href="index.html" class="co-header-logo" aria-label="Arte Pharmaceutica">
+      <img src="images/logo-arte.png" alt="Arte Pharmaceutica">
+    </a>
+    <div style="width:120px"></div><!-- espaçador para centralizar logo -->
+  </header>
 
-  <div class="checkout-layout">
-    <section class="checkout-cart" aria-labelledby="cart-heading">
-      <h2 id="cart-heading">Seu carrinho</h2>
-      <ul id="checkoutItems" class="checkout-items"></ul>
-      <p id="checkoutEmpty" class="checkout-empty" hidden>Seu carrinho está vazio. <a href="index.html#showroom">Ver produtos</a></p>
-    </section>
-
-    <aside class="checkout-summary">
-      <h2>Resumo</h2>
-      <div class="checkout-line">
-        <span>Subtotal</span>
-        <span id="checkoutSubtotal" class="checkout-amount">R$ 0,00</span>
+  <!-- ══════════════ STEPPER ══════════════ -->
+  <div class="co-stepper" role="list" aria-label="Etapas do checkout">
+    <div class="co-step is-active" id="stepIndicator1" role="listitem">
+      <div class="co-step-num" aria-hidden="true">1</div>
+      <span class="co-step-label">Identificação</span>
+    </div>
+    <div class="co-step" id="stepIndicator2" role="listitem">
+      <div class="co-step-num" aria-hidden="true">2</div>
+      <span class="co-step-label">Pagamento</span>
+    </div>
+    <div class="co-step" id="stepIndicator3" role="listitem">
+      <div class="co-step-num" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
       </div>
-      <div class="checkout-line checkout-line--note">
-        <span>Entrega / retirada</span>
-        <span>A combinar</span>
-      </div>
-      <div class="checkout-line checkout-line--total">
-        <span>Total estimado</span>
-        <span id="checkoutTotal" class="checkout-amount">R$ 0,00</span>
-      </div>
-      <a href="#" id="checkoutWhatsApp" class="btn btn-gold checkout-wa-btn" data-wa="matriz">
-        Finalizar via WhatsApp
-      </a>
-      <p class="checkout-hint">Um farmacêutico confirma valores, prazo e forma de pagamento.</p>
-      <a href="index.html#contato" class="link-subtle checkout-alt">Prefere falar com a filial?</a>
-    </aside>
+      <span class="co-step-label">Confirmação</span>
+    </div>
   </div>
-</main>
 
-<script src="store.js"></script>
-<script>
-  const CART_KEY = 'arte-pharma-cart';
-  const MATRIZ_PHONE = '5541991694197';
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="co-main">
 
-  function formatPrice(v) {
-    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
+    <!-- ──── COLUNA ESQUERDA (Formulários) ──── -->
+    <div>
 
-  function loadCart() {
-    try {
-      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
-    } catch {
-      return [];
-    }
-  }
-
-  function renderCheckout() {
-    const cart = loadCart();
-    const list = document.getElementById('checkoutItems');
-    const empty = document.getElementById('checkoutEmpty');
-    const subtotalEl = document.getElementById('checkoutSubtotal');
-    const totalEl = document.getElementById('checkoutTotal');
-    const waBtn = document.getElementById('checkoutWhatsApp');
-
-    if (!cart.length) {
-      list.innerHTML = '';
-      empty.hidden = false;
-      subtotalEl.textContent = formatPrice(0);
-      totalEl.textContent = formatPrice(0);
-      waBtn.classList.add('is-disabled');
-      waBtn.href = '#';
-      return;
-    }
-
-    empty.hidden = true;
-    let total = 0;
-    list.innerHTML = cart
-      .map((item) => {
-        const p = PRODUCTS.find((x) => x.id === item.id);
-        if (!p) return '';
-        const line = p.price * item.qty;
-        total += line;
-        return `<li class="checkout-item">
-          <img src="${p.image}" alt="" width="56" height="56">
-          <div>
-            <strong>${p.name}</strong>
-            <span class="checkout-item-qty">${item.qty} un.</span>
+      <!-- ════ ETAPA 1 — IDENTIFICAÇÃO ════ -->
+      <section class="co-form-panel" id="step1Panel" aria-labelledby="step1Title">
+        <div class="co-panel-header">
+          <div class="co-panel-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
           </div>
-          <span class="checkout-amount">${formatPrice(line)}</span>
-        </li>`;
-      })
-      .join('');
+          <div>
+            <h1 class="co-panel-title" id="step1Title">Seus dados</h1>
+            <p class="co-panel-sub">Preencha para identificarmos seu pedido</p>
+          </div>
+        </div>
 
-    subtotalEl.textContent = formatPrice(total);
-    totalEl.textContent = formatPrice(total);
+        <!--
+        ╔══════════════════════════════════════════════════════╗
+        ║  SEÇÃO RESERVADA — Login / Cadastro (implementação futura)
+        ║  Descomentar e expandir quando o sistema de contas
+        ║  estiver disponível. Ver: #futuro-login-section
+        ╚══════════════════════════════════════════════════════╝
+        -->
 
-    const msg = buildCartWhatsAppMessage(cart);
-    waBtn.href = `https://wa.me/${MATRIZ_PHONE}?text=${encodeURIComponent(msg)}`;
-    waBtn.target = '_blank';
-    waBtn.rel = 'noopener noreferrer';
-    waBtn.classList.remove('is-disabled');
+        <div class="co-form-body">
+          <form id="formStep1" novalidate>
+
+            <!-- Nome e Telefone -->
+            <div class="co-field-group">
+              <div class="co-field" id="fieldNome">
+                <label class="co-label" for="inputNome">Nome completo *</label>
+                <input class="co-input" type="text" id="inputNome" name="nome"
+                  placeholder="Seu nome completo" autocomplete="name" required>
+                <span class="co-error-msg">Informe seu nome completo</span>
+              </div>
+              <div class="co-field" id="fieldTelefone">
+                <label class="co-label" for="inputTelefone">Telefone / WhatsApp *</label>
+                <input class="co-input" type="tel" id="inputTelefone" name="telefone"
+                  placeholder="(41) 99999-9999" autocomplete="tel" required>
+                <span class="co-error-msg">Informe um telefone válido</span>
+              </div>
+            </div>
+
+            <!-- E-mail -->
+            <div class="co-field-group full">
+              <div class="co-field" id="fieldEmail">
+                <label class="co-label" for="inputEmail">E-mail *</label>
+                <input class="co-input" type="email" id="inputEmail" name="email"
+                  placeholder="seu@email.com" autocomplete="email" required>
+                <span class="co-error-msg">Informe um e-mail válido</span>
+              </div>
+            </div>
+
+            <!-- CPF e CEP -->
+            <div class="co-field-group">
+              <div class="co-field" id="fieldCpf">
+                <label class="co-label" for="inputCpf">CPF *</label>
+                <input class="co-input" type="text" id="inputCpf" name="cpf"
+                  placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
+                <span class="co-error-msg">CPF inválido (11 dígitos)</span>
+              </div>
+              <div class="co-field" id="fieldCep">
+                <label class="co-label" for="inputCep">CEP *</label>
+                <input class="co-input" type="text" id="inputCep" name="cep"
+                  placeholder="00000-000" maxlength="9" inputmode="numeric" required>
+                <span class="co-error-msg">CEP inválido (8 dígitos)</span>
+              </div>
+            </div>
+
+            <!-- Botão continuar -->
+            <button type="submit" class="co-btn-primary" id="btnStep1">
+              Continuar para o pagamento
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+
+          </form>
+        </div>
+      </section>
+
+      <!-- ════ ETAPA 2 — PAGAMENTO ════ -->
+      <section class="co-form-panel u-hidden" id="step2Panel" aria-labelledby="step2Title">
+        <div class="co-panel-header">
+          <div class="co-panel-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="1" y="4" width="22" height="16" rx="2"/>
+              <path d="M1 10h22"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="co-panel-title" id="step2Title">Forma de pagamento</h2>
+            <p class="co-panel-sub">Escolha como deseja pagar</p>
+          </div>
+        </div>
+
+        <div class="co-form-body">
+
+          <!-- Voltar para etapa 1 -->
+          <button type="button" class="co-back-link" id="btnBackStep1" aria-label="Voltar para identificação">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Voltar para identificação
+          </button>
+
+          <!-- Seletores de método -->
+          <div class="co-pay-methods" role="radiogroup" aria-labelledby="step2Title">
+
+            <!-- Cartão de crédito -->
+            <label class="co-pay-option">
+              <input type="radio" name="payMethod" value="cartao" checked>
+              <span class="co-pay-label">
+                <span class="co-pay-radio" aria-hidden="true"></span>
+                <span class="co-pay-icon co-pay-icon--card">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002B5B" stroke-width="1.5">
+                    <rect x="1" y="4" width="22" height="16" rx="2"/>
+                    <path d="M1 10h22"/>
+                  </svg>
+                </span>
+                <span class="co-pay-text">
+                  <span class="co-pay-name">Cartão de Crédito</span>
+                  <span class="co-pay-desc">Visa, Mastercard, Elo — até 6x sem juros</span>
+                </span>
+              </span>
+            </label>
+
+            <!-- PIX -->
+            <label class="co-pay-option">
+              <input type="radio" name="payMethod" value="pix">
+              <span class="co-pay-label">
+                <span class="co-pay-radio" aria-hidden="true"></span>
+                <span class="co-pay-icon co-pay-icon--pix">
+                  <!-- Ícone PIX estilizado -->
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M7.5 12l3-3 3 3-3 3-3-3z" fill="#32bcad" stroke="#32bcad" stroke-width="0.5"/>
+                    <path d="M12 7.5l3-3 3 3-3 3-3-3z" fill="#32bcad" stroke="#32bcad" stroke-width="0.5"/>
+                    <path d="M12 16.5l3-3 3 3-3 3-3-3z" fill="#32bcad" stroke="#32bcad" stroke-width="0.5"/>
+                    <path d="M3 12l3-3 3 3-3 3-3-3z" fill="#32bcad" stroke="#32bcad" stroke-width="0.5"/>
+                  </svg>
+                </span>
+                <span class="co-pay-text">
+                  <span class="co-pay-name">PIX</span>
+                  <span class="co-pay-desc">Pagamento instantâneo — aprovação imediata</span>
+                </span>
+              </span>
+            </label>
+
+            <!-- Boleto -->
+            <label class="co-pay-option">
+              <input type="radio" name="payMethod" value="boleto">
+              <span class="co-pay-label">
+                <span class="co-pay-radio" aria-hidden="true"></span>
+                <span class="co-pay-icon co-pay-icon--bol">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5">
+                    <path d="M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"/>
+                    <path d="M7 8v8M9 8v8M11 8v8M14 8v8M17 8v8M13 8v8"/>
+                  </svg>
+                </span>
+                <span class="co-pay-text">
+                  <span class="co-pay-name">Boleto Bancário</span>
+                  <span class="co-pay-desc">Vencimento em 3 dias úteis</span>
+                </span>
+              </span>
+            </label>
+
+          </div>
+
+          <!-- ── Painel: Cartão ── -->
+          <div class="co-method-panel is-active" id="panelCartao">
+            <div class="co-field-group full" style="margin-bottom:1.25rem">
+              <div class="co-field">
+                <label class="co-label" for="inputCardNum">Número do cartão</label>
+                <div class="co-card-number-wrap">
+                  <input class="co-input" type="text" id="inputCardNum"
+                    placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric"
+                    style="padding-right: 5.5rem;">
+                  <div class="co-card-flags" aria-hidden="true">
+                    <div class="co-card-flag">VISA</div>
+                    <div class="co-card-flag">MC</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="co-field-group full" style="margin-bottom:1.25rem">
+              <div class="co-field">
+                <label class="co-label" for="inputCardName">Nome no cartão</label>
+                <input class="co-input" type="text" id="inputCardName"
+                  placeholder="Exatamente como no cartão" autocomplete="cc-name">
+              </div>
+            </div>
+            <div class="co-field-group">
+              <div class="co-field">
+                <label class="co-label" for="inputCardExp">Validade</label>
+                <input class="co-input" type="text" id="inputCardExp"
+                  placeholder="MM/AA" maxlength="5" inputmode="numeric">
+              </div>
+              <div class="co-field">
+                <label class="co-label" for="inputCardCvv">CVV</label>
+                <input class="co-input" type="text" id="inputCardCvv"
+                  placeholder="000" maxlength="4" inputmode="numeric">
+              </div>
+            </div>
+            <div class="co-field-group full" style="margin-top:0.25rem">
+              <div class="co-field">
+                <label class="co-label" for="selectParcelas">Parcelas</label>
+                <div class="co-parcelas-wrap">
+                  <select class="co-select" id="selectParcelas">
+                    <!-- Populado via JS com base no VALOR_TOTAL -->
+                  </select>
+                  <svg class="co-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Painel: PIX ── -->
+          <div class="co-method-panel" id="panelPix">
+            <div class="co-pix-panel">
+              <!-- QR Code placeholder -->
+              <div class="co-pix-qr" aria-label="QR Code PIX — placeholder">
+                <svg width="120" height="120" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                  <rect x="10" y="10" width="30" height="30" rx="2" fill="#002B5B"/>
+                  <rect x="15" y="15" width="20" height="20" rx="1" fill="white"/>
+                  <rect x="18" y="18" width="14" height="14" fill="#002B5B"/>
+                  <rect x="60" y="10" width="30" height="30" rx="2" fill="#002B5B"/>
+                  <rect x="65" y="15" width="20" height="20" rx="1" fill="white"/>
+                  <rect x="68" y="18" width="14" height="14" fill="#002B5B"/>
+                  <rect x="10" y="60" width="30" height="30" rx="2" fill="#002B5B"/>
+                  <rect x="15" y="65" width="20" height="20" rx="1" fill="white"/>
+                  <rect x="18" y="68" width="14" height="14" fill="#002B5B"/>
+                  <rect x="45" y="10" width="8" height="8" fill="#002B5B"/>
+                  <rect x="45" y="22" width="8" height="8" fill="#002B5B"/>
+                  <rect x="60" y="45" width="8" height="8" fill="#002B5B"/>
+                  <rect x="72" y="45" width="8" height="8" fill="#002B5B"/>
+                  <rect x="45" y="45" width="8" height="8" fill="#002B5B"/>
+                  <rect x="45" y="57" width="8" height="8" fill="#002B5B"/>
+                  <rect x="45" y="69" width="8" height="8" fill="#002B5B"/>
+                  <rect x="60" y="57" width="8" height="8" fill="#002B5B"/>
+                  <rect x="84" y="57" width="8" height="8" fill="#002B5B"/>
+                  <rect x="72" y="69" width="8" height="8" fill="#002B5B"/>
+                  <rect x="84" y="81" width="8" height="8" fill="#002B5B"/>
+                  <rect x="60" y="81" width="8" height="8" fill="#002B5B"/>
+                </svg>
+                <div class="co-pix-qr-badge">
+                  <span>QR Code</span>
+                  <span>PIX</span>
+                </div>
+              </div>
+
+              <!-- Chave PIX -->
+              <div class="co-pix-key-box">
+                <span class="co-pix-key-label">Chave PIX</span>
+                <span class="co-pix-key-value" id="pixKeyDisplay">—</span>
+              </div>
+
+              <!-- Botão copiar -->
+              <button type="button" class="co-btn-pix-copy" id="btnCopyPix">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                </svg>
+                Copiar chave PIX
+              </button>
+              <p class="co-pix-feedback" id="pixFeedback" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <!-- ── Painel: Boleto ── -->
+          <div class="co-method-panel" id="panelBoleto">
+            <div class="co-boleto-panel">
+              <div class="co-boleto-info">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 8v4M12 16h.01"/>
+                </svg>
+                <div class="co-boleto-info-text">
+                  <strong>Instruções do boleto</strong>
+                  Após gerar, você terá <strong>3 dias úteis</strong> para pagar em qualquer banco ou lotérica.
+                  O pedido será processado após a confirmação do pagamento.
+                </div>
+              </div>
+              <button type="button" class="co-btn-boleto" id="btnGerarBoleto">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 2v12M12 14l4-4M12 14l-4-4M5 20h14"/>
+                </svg>
+                Gerar boleto
+              </button>
+              <div class="co-boleto-success" id="boletoSuccess" aria-live="polite">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a7a48" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M8 12l3 3 5-5"/>
+                </svg>
+                <span class="co-boleto-success-text">
+                  Boleto gerado com sucesso! Verifique seu e-mail ou
+                  <a class="link-gold" id="boletoLink" href="#" target="_blank" rel="noopener">clique aqui para abrir</a>.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="co-section-divider"></div>
+
+          <!-- Botão finalizar -->
+          <button type="button" class="co-btn-primary" id="btnFinalizarPedido">
+            Finalizar pedido
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+          </button>
+
+        </div>
+      </section>
+
+      <!-- ════ ETAPA 3 — CONFIRMAÇÃO ════ -->
+      <section class="co-form-panel u-hidden" id="step3Panel" aria-labelledby="step3Title">
+        <div class="co-confirm-panel is-active">
+          <div class="co-confirm-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a7a48" stroke-width="2">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+          </div>
+          <h2 class="co-confirm-title" id="step3Title">Pedido realizado!</h2>
+          <p class="co-confirm-text" id="confirmText">
+            Obrigado! Em breve nossa equipe entrará em contato via WhatsApp para confirmar os detalhes do seu pedido.
+          </p>
+          <a href="index.html#showroom" class="co-btn-primary" style="max-width:280px;margin:0 auto;text-decoration:none;display:inline-flex;">
+            Continuar comprando
+          </a>
+        </div>
+      </section>
+
+    </div><!-- fim coluna esquerda -->
+
+    <!-- ──── COLUNA DIREITA — RESUMO ──── -->
+    <aside class="co-summary" aria-label="Resumo do pedido">
+      <div class="co-summary-card">
+        <h2 class="co-summary-title">Resumo do pedido</h2>
+
+        <!-- Itens do carrinho (populado via JS) -->
+        <div id="summaryContent">
+          <div class="co-empty-cart">
+            <p>Seu carrinho está vazio</p>
+            <a href="index.html#showroom" class="co-btn-primary" style="max-width:200px;margin:0 auto;text-decoration:none;display:inline-flex;font-size:0.65rem;">
+              Ver produtos
+            </a>
+          </div>
+        </div>
+
+        <!-- Segurança -->
+        <div class="co-summary-secure">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6b7d" stroke-width="1.5" aria-hidden="true">
+            <path d="M12 2l7 3v5c0 4.5-3 8.5-7 10C5 18.5 2 14.5 2 10V5l10-3z"/>
+            <path d="M8 12l3 3 5-5"/>
+          </svg>
+          <span>Compra 100% segura. Seus dados são protegidos e não são compartilhados.</span>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ══════════════ FOOTER ══════════════ -->
+  <footer class="co-footer">
+    <p>© 2026 Arte Pharmaceutica. Todos os direitos reservados.</p>
+    <nav class="co-footer-links" aria-label="Links do rodapé">
+      <a href="index.html">Voltar à loja</a>
+      <a href="index.html#contato">Contato</a>
+    </nav>
+  </footer>
+
+  <!-- ══════════════════════════════════════
+       SCRIPT DO CHECKOUT
+  ══════════════════════════════════════ -->
+  <script>
+    /* ════════════════════════════════════════════
+       VARIÁVEIS EDITÁVEIS — altere aqui conforme
+       necessário sem tocar no restante do código
+    ════════════════════════════════════════════ */
+    const CHAVE_PIX         = 'artepharmaceutica@pix.com.br'; // Altere para sua chave PIX real
+    const VALOR_TOTAL       = 0;          // Será calculado dinamicamente pelo carrinho
+    const MAX_PARCELAS      = 6;          // Número máximo de parcelas sem juros
+    const LINK_BOLETO_BASE  = '#';        // URL do servidor para gerar boleto
+    const WA_PHONE          = '5541991694197';
+    const WA_MESSAGE        = 'Olá! Acabei de finalizar meu pedido no site. Pode me ajudar?';
+
+    /* ════════════════════════════════════════════
+       ESTADO DA APLICAÇÃO
+    ════════════════════════════════════════════ */
+    const state = {
+      currentStep: 1,       // 1 = identificação | 2 = pagamento | 3 = confirmação
+      payMethod: 'cartao',  // 'cartao' | 'pix' | 'boleto'
+      formData: {},
+      cartItems: [],
+      cartTotal: 0,
+    };
+
+    /* ════════════════════════════════════════════
+       CARRINHO — Lê do localStorage (store.js)
+    ════════════════════════════════════════════ */
+    // Tabela de preços — igual ao store.js
+    
+const PRODUCTS_PRICES = {
+  'curcuma-500':   { name: 'Cúrcuma 500mg',         price: 89,  img: 'images/products/curcuma-500mg.png' },
+  'kit-unhas':     { name: 'Kit Cuidado Para Unhas', price: 149, img: 'images/products/kit-unhas.png' },
+  'malta-cabelao': { name: 'Malta Cabelão',          price: 119, img: 'images/products/malta-cabelao.png' },
+  'pantoarte':     { name: 'Pantoarte',              price: 95,  img: 'images/products/pantoarte.png' },
+};
+
+function loadCart() {
+  try {
+    const raw = localStorage.getItem('arte-pharma-cart'); // mesma chave do store.js
+    const items = raw ? JSON.parse(raw) : [];
+    state.cartItems = items.map(item => {
+      const p = PRODUCTS_PRICES[item.id] || {};
+      return { name: p.name || item.id, price: p.price || 0, qty: item.qty || 1, img: p.img || '' };
+    });
+    state.cartTotal = state.cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  } catch (e) {
+    state.cartItems = [];
+    state.cartTotal = 0;
   }
+}
 
-  document.addEventListener('DOMContentLoaded', renderCheckout);
-</script>
+    function renderSummary() {
+      const el = document.getElementById('summaryContent');
+      if (!el) return;
+
+      if (!state.cartItems.length) {
+        el.innerHTML = `
+          <div class="co-empty-cart">
+            <p>Seu carrinho está vazio</p>
+            <a href="index.html#showroom" class="co-btn-primary"
+               style="max-width:200px;margin:0 auto;text-decoration:none;display:inline-flex;font-size:0.65rem;">
+              Ver produtos
+            </a>
+          </div>`;
+        return;
+      }
+
+      const itemsHTML = state.cartItems.map(item => `
+        <li class="co-summary-item">
+          <img class="co-summary-item-img"
+               src="${item.img || ''}"
+               alt="${item.name || ''}"
+               onerror="this.style.opacity='0'">
+          <div class="co-summary-item-info">
+            <div class="co-summary-item-name">${item.name || '—'}</div>
+            <div class="co-summary-item-qty">Qtd: ${item.qty || 1}</div>
+          </div>
+          <div class="co-summary-item-price">
+            R$ ${((item.price || 0) * (item.qty || 1)).toFixed(2).replace('.', ',')}
+          </div>
+        </li>
+      `).join('');
+
+      const frete = state.cartTotal > 0 ? 'A calcular' : '—';
+
+      el.innerHTML = `
+        <ul class="co-summary-items">${itemsHTML}</ul>
+        <div class="co-summary-divider"></div>
+        <div class="co-summary-line">
+          <span>Subtotal</span>
+          <span>R$ ${state.cartTotal.toFixed(2).replace('.', ',')}</span>
+        </div>
+        <div class="co-summary-line">
+          <span>Frete</span>
+          <span>${frete}</span>
+        </div>
+        <div class="co-summary-line co-summary-line--total">
+          <span>Total</span>
+          <span>R$ ${state.cartTotal.toFixed(2).replace('.', ',')}</span>
+        </div>
+      `;
+    }
+
+    /* ════════════════════════════════════════════
+       PARCELAS — Preenche select dinamicamente
+    ════════════════════════════════════════════ */
+    function populateParcelas() {
+      const select = document.getElementById('selectParcelas');
+      if (!select) return;
+      select.innerHTML = '';
+      const total = state.cartTotal || VALOR_TOTAL || 99.00; // fallback demo
+      for (let i = 1; i <= MAX_PARCELAS; i++) {
+        const valor = (total / i).toFixed(2).replace('.', ',');
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i === 1
+          ? `1x de R$ ${valor} (à vista)`
+          : `${i}x de R$ ${valor} sem juros`;
+        select.appendChild(opt);
+      }
+    }
+
+    /* ════════════════════════════════════════════
+       PIX — Exibe chave
+    ════════════════════════════════════════════ */
+    function setupPix() {
+      const display = document.getElementById('pixKeyDisplay');
+      if (display) display.textContent = CHAVE_PIX;
+    }
+
+    /* ════════════════════════════════════════════
+       STEPPER — Atualiza indicadores visuais
+    ════════════════════════════════════════════ */
+    function updateStepper(step) {
+      [1, 2, 3].forEach(n => {
+        const el = document.getElementById(`stepIndicator${n}`);
+        if (!el) return;
+        el.classList.remove('is-active', 'is-done');
+        if (n < step) el.classList.add('is-done');
+        if (n === step) el.classList.add('is-active');
+      });
+    }
+
+    /* ════════════════════════════════════════════
+       NAVEGAÇÃO DE ETAPAS
+    ════════════════════════════════════════════ */
+    function goToStep(step) {
+      state.currentStep = step;
+      updateStepper(step);
+
+      document.getElementById('step1Panel').classList.toggle('u-hidden', step !== 1);
+      document.getElementById('step2Panel').classList.toggle('u-hidden', step !== 2);
+      document.getElementById('step3Panel').classList.toggle('u-hidden', step !== 3);
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ════════════════════════════════════════════
+       VALIDAÇÃO — Etapa 1
+    ════════════════════════════════════════════ */
+    function validateStep1() {
+      let valid = true;
+
+      function check(fieldId, inputId, testFn) {
+        const field = document.getElementById(fieldId);
+        const input = document.getElementById(inputId);
+        if (!field || !input) return;
+        const ok = testFn(input.value.trim());
+        field.classList.toggle('has-error', !ok);
+        if (!ok) valid = false;
+      }
+
+      check('fieldNome', 'inputNome', v => v.length >= 3 && v.includes(' '));
+      check('fieldEmail', 'inputEmail', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+      check('fieldTelefone', 'inputTelefone', v => v.replace(/\D/g, '').length >= 10);
+      check('fieldCpf', 'inputCpf', v => v.replace(/\D/g, '').length === 11);
+      check('fieldCep', 'inputCep', v => v.replace(/\D/g, '').length === 8);
+
+      return valid;
+    }
+
+    /* ════════════════════════════════════════════
+       MÁSCARAS de input
+    ════════════════════════════════════════════ */
+    function applyMasks() {
+      // CPF: 000.000.000-00
+      const cpf = document.getElementById('inputCpf');
+      if (cpf) {
+        cpf.addEventListener('input', () => {
+          let v = cpf.value.replace(/\D/g, '').substring(0, 11);
+          if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+          else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+          else if (v.length > 3) v = v.replace(/(\d{3})(\d{3})/, '$1.$2');
+          cpf.value = v;
+        });
+      }
+
+      // CEP: 00000-000
+      const cep = document.getElementById('inputCep');
+      if (cep) {
+        cep.addEventListener('input', () => {
+          let v = cep.value.replace(/\D/g, '').substring(0, 8);
+          if (v.length > 5) v = v.replace(/(\d{5})(\d{3})/, '$1-$2');
+          cep.value = v;
+        });
+      }
+
+      // Telefone: (00) 00000-0000
+      const tel = document.getElementById('inputTelefone');
+      if (tel) {
+        tel.addEventListener('input', () => {
+          let v = tel.value.replace(/\D/g, '').substring(0, 11);
+          if (v.length > 10) v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+          else if (v.length > 6) v = v.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3');
+          else if (v.length > 2) v = v.replace(/(\d{2})(\d+)/, '($1) $2');
+          tel.value = v;
+        });
+      }
+
+      // Cartão: 0000 0000 0000 0000
+      const cardNum = document.getElementById('inputCardNum');
+      if (cardNum) {
+        cardNum.addEventListener('input', () => {
+          let v = cardNum.value.replace(/\D/g, '').substring(0, 16);
+          v = v.replace(/(\d{4})/g, '$1 ').trim();
+          cardNum.value = v;
+        });
+      }
+
+      // Validade: MM/AA
+      const exp = document.getElementById('inputCardExp');
+      if (exp) {
+        exp.addEventListener('input', () => {
+          let v = exp.value.replace(/\D/g, '').substring(0, 4);
+          if (v.length > 2) v = v.replace(/(\d{2})(\d{2})/, '$1/$2');
+          exp.value = v;
+        });
+      }
+    }
+
+    /* ════════════════════════════════════════════
+       MÉTODOS DE PAGAMENTO — troca de painel
+    ════════════════════════════════════════════ */
+    function setupPayMethodSwitch() {
+      document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          state.payMethod = radio.value;
+          document.querySelectorAll('.co-method-panel').forEach(p => p.classList.remove('is-active'));
+          const panelMap = { cartao: 'panelCartao', pix: 'panelPix', boleto: 'panelBoleto' };
+          const panel = document.getElementById(panelMap[radio.value]);
+          if (panel) panel.classList.add('is-active');
+        });
+      });
+    }
+
+    /* ════════════════════════════════════════════
+       PIX — Copiar chave
+    ════════════════════════════════════════════ */
+    function setupCopyPix() {
+      const btn = document.getElementById('btnCopyPix');
+      const fb  = document.getElementById('pixFeedback');
+      if (!btn) return;
+
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(CHAVE_PIX);
+          btn.classList.add('is-copied');
+          if (fb) fb.textContent = '✓ Chave copiada com sucesso!';
+          setTimeout(() => {
+            btn.classList.remove('is-copied');
+            if (fb) fb.textContent = '';
+          }, 3500);
+        } catch {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = CHAVE_PIX;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (fb) fb.textContent = '✓ Chave copiada!';
+          setTimeout(() => { if (fb) fb.textContent = ''; }, 3000);
+        }
+      });
+    }
+
+    /* ════════════════════════════════════════════
+       BOLETO — Gerar
+    ════════════════════════════════════════════ */
+    function setupBoleto() {
+      const btn     = document.getElementById('btnGerarBoleto');
+      const success = document.getElementById('boletoSuccess');
+      const link    = document.getElementById('boletoLink');
+      if (!btn) return;
+
+      btn.addEventListener('click', () => {
+        // Aqui você pode chamar a API real de boleto
+        // Por enquanto, simula sucesso
+        btn.disabled = true;
+        btn.textContent = 'Gerando…';
+
+        setTimeout(() => {
+          btn.style.display = 'none';
+          if (success) success.classList.add('is-visible');
+          if (link) link.href = LINK_BOLETO_BASE;
+        }, 1500);
+      });
+    }
+
+    /* ════════════════════════════════════════════
+       FINALIZAR PEDIDO
+    ════════════════════════════════════════════ */
+    function setupFinalizarPedido() {
+      const btn = document.getElementById('btnFinalizarPedido');
+      if (!btn) return;
+
+      btn.addEventListener('click', () => {
+        // Limpa carrinho
+        localStorage.removeItem('arte_cart');
+
+        // Mensagem de confirmação por método
+        const msgs = {
+          cartao: 'Obrigado! Seu pagamento com cartão está sendo processado. Você receberá a confirmação por e-mail.',
+          pix:    'Obrigado! Assim que identificarmos o pagamento PIX, seu pedido será liberado.',
+          boleto: 'Obrigado! Seu boleto foi gerado. O pedido será processado após o pagamento.',
+        };
+        const confirmText = document.getElementById('confirmText');
+        if (confirmText) confirmText.textContent = msgs[state.payMethod] || msgs.cartao;
+
+        goToStep(3);
+      });
+    }
+
+    /* ════════════════════════════════════════════
+       EVENTOS GERAIS
+    ════════════════════════════════════════════ */
+    function setupEvents() {
+      // Etapa 1 → 2
+      const form1 = document.getElementById('formStep1');
+      if (form1) {
+        form1.addEventListener('submit', e => {
+          e.preventDefault();
+          if (validateStep1()) {
+            // Salva dados do formulário
+            state.formData = {
+              nome:     document.getElementById('inputNome')?.value,
+              email:    document.getElementById('inputEmail')?.value,
+              telefone: document.getElementById('inputTelefone')?.value,
+              cpf:      document.getElementById('inputCpf')?.value,
+              cep:      document.getElementById('inputCep')?.value,
+            };
+            goToStep(2);
+          }
+        });
+      }
+
+      // Botão voltar (etapa 2 → 1)
+      const backBtn = document.getElementById('btnBackStep1');
+      if (backBtn) backBtn.addEventListener('click', () => goToStep(1));
+    }
+
+    /* ════════════════════════════════════════════
+       INICIALIZAÇÃO
+    ════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCart();
+      renderSummary();
+      populateParcelas();
+      setupPix();
+      applyMasks();
+      setupPayMethodSwitch();
+      setupCopyPix();
+      setupBoleto();
+      setupFinalizarPedido();
+      setupEvents();
+      updateStepper(1);
+    });
+  </script>
+
 </body>
 </html>

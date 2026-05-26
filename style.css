@@ -1719,6 +1719,238 @@ body.modal-open { overflow: hidden; }
   font-size: 0.75rem;
 }
 
+.checkout-order-wa {
+  display: block;
+  margin-top: 1.25rem;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.checkout-order-wa.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Pagamento PIX */
+.pix-payment {
+  margin-top: clamp(3rem, 8vw, 4.5rem);
+  display: flex;
+  justify-content: center;
+}
+
+.pix-payment-card {
+  width: min(480px, 100%);
+  padding: clamp(2rem, 5vw, 2.75rem);
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 43, 91, 0.08);
+  box-shadow: 0 24px 64px rgba(0, 43, 91, 0.08);
+  text-align: center;
+}
+
+.pix-payment-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 43, 91, 0.06);
+}
+
+.pix-brand {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: rgba(50, 188, 173, 0.12);
+  border-radius: 12px;
+}
+
+.pix-logo {
+  width: 36px;
+  height: 36px;
+}
+
+.pix-payment-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.pix-payment-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
+.pix-pay-amount {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  margin-bottom: 1.5rem;
+}
+
+.pix-pay-amount strong {
+  color: var(--navy);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.pix-qr-wrap {
+  margin: 0 auto 1.75rem;
+}
+
+.pix-qr {
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--off);
+  padding: 0.5rem;
+}
+
+.pix-qr-caption {
+  margin-top: 0.65rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  color: var(--text-soft);
+}
+
+.pix-qr-caption code {
+  font-size: 0.65rem;
+  color: var(--navy);
+  background: rgba(0, 43, 91, 0.05);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.pix-key-block {
+  margin-bottom: 1.75rem;
+  padding: 1.25rem 1rem;
+  background: var(--off);
+  border-radius: 12px;
+  border: 1px dashed var(--gold-muted);
+}
+
+.pix-key-label {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.pix-key-value {
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  font-weight: 600;
+  color: var(--navy);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.pix-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.btn-pix-copy {
+  position: relative;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: #32bcad;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.35s var(--ease), transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+
+.btn-pix-copy:hover {
+  background: #2aa89a;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(50, 188, 173, 0.35);
+}
+
+.btn-pix-copy.is-copied {
+  background: var(--navy);
+}
+
+.btn-pix-copy-label,
+.btn-pix-copy-done {
+  display: block;
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.btn-pix-copy-done {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.btn-pix-copy.is-copied .btn-pix-copy-label {
+  opacity: 0;
+}
+
+.btn-pix-copy.is-copied .btn-pix-copy-done {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pix-copy-feedback {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #32bcad;
+  margin: -0.25rem 0 0;
+}
+
+.btn-pix-paid {
+  display: block;
+  width: 100%;
+  padding: 0.95rem 1.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  color: var(--navy);
+  background: transparent;
+  border: 1px solid rgba(0, 43, 91, 0.2);
+  border-radius: 10px;
+  transition: border-color 0.35s var(--ease), background 0.35s var(--ease), color 0.35s var(--ease);
+}
+
+.btn-pix-paid:hover {
+  border-color: var(--gold);
+  background: rgba(197, 160, 89, 0.08);
+  color: var(--navy);
+}
+
 @media (max-width: 1000px) {
   .showroom-grid { grid-template-columns: repeat(2, 1fr); }
   .modal-grid { grid-template-columns: 1fr; }
