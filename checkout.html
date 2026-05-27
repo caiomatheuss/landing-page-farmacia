@@ -1228,35 +1228,9 @@
           <div class="co-method-panel" id="panelPix">
             <div class="co-pix-panel">
               <!-- QR Code placeholder -->
-              <div class="co-pix-qr" aria-label="QR Code PIX — placeholder">
-                <svg width="120" height="120" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-                  <rect x="10" y="10" width="30" height="30" rx="2" fill="#002B5B"/>
-                  <rect x="15" y="15" width="20" height="20" rx="1" fill="white"/>
-                  <rect x="18" y="18" width="14" height="14" fill="#002B5B"/>
-                  <rect x="60" y="10" width="30" height="30" rx="2" fill="#002B5B"/>
-                  <rect x="65" y="15" width="20" height="20" rx="1" fill="white"/>
-                  <rect x="68" y="18" width="14" height="14" fill="#002B5B"/>
-                  <rect x="10" y="60" width="30" height="30" rx="2" fill="#002B5B"/>
-                  <rect x="15" y="65" width="20" height="20" rx="1" fill="white"/>
-                  <rect x="18" y="68" width="14" height="14" fill="#002B5B"/>
-                  <rect x="45" y="10" width="8" height="8" fill="#002B5B"/>
-                  <rect x="45" y="22" width="8" height="8" fill="#002B5B"/>
-                  <rect x="60" y="45" width="8" height="8" fill="#002B5B"/>
-                  <rect x="72" y="45" width="8" height="8" fill="#002B5B"/>
-                  <rect x="45" y="45" width="8" height="8" fill="#002B5B"/>
-                  <rect x="45" y="57" width="8" height="8" fill="#002B5B"/>
-                  <rect x="45" y="69" width="8" height="8" fill="#002B5B"/>
-                  <rect x="60" y="57" width="8" height="8" fill="#002B5B"/>
-                  <rect x="84" y="57" width="8" height="8" fill="#002B5B"/>
-                  <rect x="72" y="69" width="8" height="8" fill="#002B5B"/>
-                  <rect x="84" y="81" width="8" height="8" fill="#002B5B"/>
-                  <rect x="60" y="81" width="8" height="8" fill="#002B5B"/>
-                </svg>
-                <div class="co-pix-qr-badge">
-                  <span>QR Code</span>
-                  <span>PIX</span>
-                </div>
-              </div>
+              <div class="co-pix-qr">
+              <img src="images/qr_code_teste.png" alt="QR Code PIX" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
+          </div>
 
               <!-- Chave PIX -->
               <div class="co-pix-key-box">
@@ -1387,7 +1361,7 @@
        VARIÁVEIS EDITÁVEIS — altere aqui conforme
        necessário sem tocar no restante do código
     ════════════════════════════════════════════ */
-    const CHAVE_PIX         = 'artepharmaceutica@pix.com.br'; // Altere para sua chave PIX real
+    const CHAVE_PIX         = '00020101021126330014br.gov.bcb.pix0111102381569905204000053039865802BR5919CAIO M DE A RIBEIRO6013SAO JOSE DOS 62070503***63043E9E'; // Altere para sua chave PIX real
     const VALOR_TOTAL       = 0;          // Será calculado dinamicamente pelo carrinho
     const MAX_PARCELAS      = 6;          // Número máximo de parcelas sem juros
     const LINK_BOLETO_BASE  = '#';        // URL do servidor para gerar boleto
