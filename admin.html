@@ -1,0 +1,90 @@
+ <!-- ══ TELA DE LOGIN ══ -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">Arte Pharmaceutica</div>
+      <div class="login-sub">Painel Administrativo</div>
+
+      <label class="login-label" for="inputSenha">Senha de acesso</label>
+      <input class="login-input" type="password" id="inputSenha" placeholder="••••••••"
+        autocomplete="current-password">
+
+      <button class="login-btn" id="btnLogin">Entrar</button>
+      <p class="login-error" id="loginError"></p>
+    </div>
+  </div>
+
+  <!-- ══ PAINEL ADMIN ══ -->
+  <div id="adminPanel">
+
+    <header class="adm-header">
+      <div>
+        <div class="adm-header-title">Painel de Pedidos</div>
+        <div class="adm-header-sub">Arte Pharmaceutica — Administrativo</div>
+      </div>
+      <button class="adm-logout" id="btnLogout">Sair</button>
+    </header>
+
+    <main class="adm-main">
+
+      <!-- Cards resumo -->
+      <div class="adm-stats">
+        <div class="adm-stat-card">
+          <div class="adm-stat-label">Total de pedidos</div>
+          <div class="adm-stat-value" id="statTotal">—</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-label">Receita confirmada</div>
+          <div class="adm-stat-value"><span>R$</span> <span id="statReceita">—</span></div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-label">Pagos</div>
+          <div class="adm-stat-value" id="statPagos">—</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-label">Pendentes</div>
+          <div class="adm-stat-value" id="statPendentes">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="adm-filters">
+        <button class="adm-filter-btn active" data-filter="TODOS">Todos</button>
+        <button class="adm-filter-btn" data-filter="RECEIVED">Pagos</button>
+        <button class="adm-filter-btn" data-filter="CONFIRMED">Confirmados</button>
+        <button class="adm-filter-btn" data-filter="PENDING">Pendentes</button>
+        <button class="adm-filter-btn" data-filter="OVERDUE">Vencidos</button>
+        <button class="adm-refresh" id="btnRefresh">↻ Atualizar</button>
+      </div>
+
+      <!-- Tabela -->
+      <div class="adm-table-wrap">
+        <div class="adm-loading" id="loadingMsg">Carregando pedidos…</div>
+        <table id="tabelaPedidos" style="display:none">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Descrição</th>
+              <th>Método</th>
+              <th>Parcelas</th>
+              <th>Valor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaBody"></tbody>
+        </table>
+        <div class="adm-empty" id="emptyMsg" style="display:none">
+          Nenhum pedido encontrado.
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="adm-footer">
+      © 2026 Arte Pharmaceutica — Acesso restrito
+    </footer>
+
+  </div>
+
+
+<script src="store.js"></script>

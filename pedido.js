@@ -1,0 +1,144 @@
+// ══ SENHA DE ACESSO ══ (altere aqui)
+    const SENHA_ADMIN = 'arte2026';
+
+    // ══ ESTADO ══
+    let todosPedidos = [];
+    let filtroAtual = 'TODOS';
+
+    // ══ LOGIN ══
+    function verificarLogin() {
+      if (sessionStorage.getItem('adm_auth') === '1') mostrarAdmin();
+    }
+
+    document.getElementById('btnLogin').addEventListener('click', fazerLogin);
+    document.getElementById('inputSenha').addEventListener('keydown', e => {
+      if (e.key === 'Enter') fazerLogin();
+    });
+
+    function fazerLogin() {
+      const senha = document.getElementById('inputSenha').value;
+      const erro  = document.getElementById('loginError');
+      if (senha === SENHA_ADMIN) {
+        sessionStorage.setItem('adm_auth', '1');
+        mostrarAdmin();
+      } else {
+        erro.textContent = 'Senha incorreta. Tente novamente.';
+        document.getElementById('inputSenha').value = '';
+      }
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      sessionStorage.removeItem('adm_auth');
+      location.reload();
+    });
+
+    function mostrarAdmin() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      carregarPedidos();
+    }
+
+    // ══ CARREGAR PEDIDOS ══
+    async function carregarPedidos() {
+      document.getElementById('loadingMsg').style.display = 'block';
+      document.getElementById('tabelaPedidos').style.display = 'none';
+      document.getElementById('emptyMsg').style.display = 'none';
+
+      const resp = await fetch('/.netlify/functions/listar-pedidos');
+      const data = await resp.json();
+
+      todosPedidos = data.data || [];
+      renderizarTabela();
+      atualizarStats();
+
+      document.getElementById('loadingMsg').style.display = 'none';
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', carregarPedidos);
+
+    // ══ FILTROS ══
+    document.querySelectorAll('.adm-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.adm-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroAtual = btn.dataset.filter;
+        renderizarTabela();
+      });
+    });
+
+    // ══ RENDERIZAR TABELA ══
+    function renderizarTabela() {
+      const lista = filtroAtual === 'TODOS'
+        ? todosPedidos
+        : todosPedidos.filter(p => p.status === filtroAtual);
+
+      const tbody = document.getElementById('tabelaBody');
+      const tabela = document.getElementById('tabelaPedidos');
+      const empty  = document.getElementById('emptyMsg');
+
+      if (!lista.length) {
+        tabela.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      tabela.style.display = 'table';
+      empty.style.display = 'none';
+
+      tbody.innerHTML = lista.map(p => {
+        const data = new Date(p.dateCreated).toLocaleDateString('pt-BR');
+        const metodo = traduzirMetodo(p.billingType);
+        const status = traduzirStatus(p.status);
+        const badgeClass = badgeCss(p.status);
+        const parcelas = p.installmentCount > 1 ? `${p.installmentCount}x` : '1x';
+        const valor = `R$ ${p.value.toFixed(2).replace('.', ',')}`;
+
+        return `
+          <tr>
+            <td>${data}</td>
+            <td>${p.customer?.name || '—'}</td>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${p.description || '—'}</td>
+            <td>${metodo}</td>
+            <td>${parcelas}</td>
+            <td style="font-weight:600">${valor}</td>
+            <td><span class="badge ${badgeClass}">${status}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ══ STATS ══
+    function atualizarStats() {
+      const pagos     = todosPedidos.filter(p => p.status === 'RECEIVED' || p.status === 'CONFIRMED');
+      const pendentes = todosPedidos.filter(p => p.status === 'PENDING');
+      const receita   = pagos.reduce((s, p) => s + p.value, 0);
+
+      document.getElementById('statTotal').textContent    = todosPedidos.length;
+      document.getElementById('statPagos').textContent    = pagos.length;
+      document.getElementById('statPendentes').textContent = pendentes.length;
+      document.getElementById('statReceita').textContent  = receita.toFixed(2).replace('.', ',');
+    }
+
+    // ══ HELPERS ══
+    function traduzirMetodo(tipo) {
+      const map = { CREDIT_CARD: 'Cartão', BOLETO: 'Boleto', PIX: 'PIX', DEBIT_CARD: 'Débito' };
+      return map[tipo] || tipo;
+    }
+
+    function traduzirStatus(status) {
+      const map = {
+        PENDING: 'Pendente', RECEIVED: 'Pago', CONFIRMED: 'Confirmado',
+        OVERDUE: 'Vencido', REFUNDED: 'Estornado', CANCELLED: 'Cancelado',
+        DECLINED: 'Recusado',
+      };
+      return map[status] || status;
+    }
+
+    function badgeCss(status) {
+      if (status === 'RECEIVED' || status === 'CONFIRMED') return 'badge-pago';
+      if (status === 'PENDING') return 'badge-pendente';
+      return 'badge-cancelado';
+    }
+
+    // ══ INIT ══
+    verificarLogin();
