@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout | Arte Pharmaceutica</title>
+  <script type="module" src="login-modal.js"></script>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1515,31 +1516,36 @@ function loadCart() {
     /* ════════════════════════════════════════════
        VALIDAÇÃO — Etapa 1
     ════════════════════════════════════════════ */
-     function validateStep1() {
-      let valid = true;
-
-      function check(fieldId, inputId, testFn) {
-        const field = document.getElementById(fieldId);
-        const input = document.getElementById(inputId);
-        if (!field || !input) return;
-        const ok = testFn(input.value.trim());
-        field.classList.toggle('has-error', !ok);
-        if (!ok) valid = false;
-      }
-
-      check('fieldNome',    'inputNome',    v => v.length >= 3 && v.includes(' '));
-      check('fieldEmail',   'inputEmail',   v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
-      check('fieldTelefone','inputTelefone',v => v.replace(/\D/g, '').length >= 10);
-      check('fieldCpf',     'inputCpf',     v => v.replace(/\D/g, '').length === 11);
-      check('fieldCep',     'inputCep',     v => v.replace(/\D/g, '').length === 8);
-      check('fieldRua',     'inputRua',     v => v.length >= 3);
-      check('fieldNumero',  'inputNumero',  v => v.length >= 1);
-      check('fieldBairro',  'inputBairro',  v => v.length >= 2);
-      check('fieldCidade',  'inputCidade',  v => v.length >= 2);
-      check('fieldEstado',  'inputEstado',  v => v.length === 2);
-
-      return valid;
-    }
+     if (validateStep1()) {
+  // Verifica login antes de ir para pagamento
+  const { getUsuarioAtual } = await import('./auth.js');
+  const { abrirModal } = await import('./login-modal.js');
+  const user = await getUsuarioAtual();
+  if (!user) {
+    window.__onAuthSuccess = () => {
+      // Salva dados e avança após login
+      state.formData = {
+        nome:         document.getElementById('inputNome')?.value,
+        email:        document.getElementById('inputEmail')?.value,
+        telefone:     document.getElementById('inputTelefone')?.value,
+        cpf:          document.getElementById('inputCpf')?.value,
+        cep:          document.getElementById('inputCep')?.value,
+        destinatario: document.getElementById('inputDestinatario')?.value,
+        rua:          document.getElementById('inputRua')?.value,
+        numero:       document.getElementById('inputNumero')?.value,
+        complemento:  document.getElementById('inputComplemento')?.value,
+        bairro:       document.getElementById('inputBairro')?.value,
+        cidade:       document.getElementById('inputCidade')?.value,
+        estado:       document.getElementById('inputEstado')?.value,
+      };
+      goToStep(2);
+    };
+    abrirModal('login');
+    return;
+  }
+     }
+  // Salva dados do formulário
+  state.formData = {}
 
     /* ════════════════════════════════════════════
        MÁSCARAS de input
