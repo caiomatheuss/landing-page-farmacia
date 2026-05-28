@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════
 
 import { cadastrar, login, logout, getUsuarioAtual, onAuthStateChanged, auth } from './auth.js';
+import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 // ── Injeta o HTML do modal no body ────────────
 function injetarModal() {
@@ -106,6 +107,28 @@ function injetarModal() {
       min-height: 1rem; margin-top: -0.5rem;
     }
 
+    /* ── Esqueceu a senha ── */
+    .auth-forgot {
+      display: block; text-align: right;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.68rem; color: #C5A059;
+      text-decoration: none; margin-top: -0.5rem; margin-bottom: 1rem;
+      cursor: pointer; background: none; border: none; padding: 0;
+      transition: color 0.3s;
+    }
+    .auth-forgot:hover { color: #002B5B; }
+
+    /* ── Mensagem de sucesso ── */
+    .auth-success {
+      font-size: 0.78rem; color: #1a7a48; font-weight: 500;
+      background: rgba(50,188,100,0.08);
+      border: 1px solid rgba(50,188,100,0.25);
+      border-radius: 4px; padding: 0.75rem 1rem;
+      margin-top: -0.5rem; margin-bottom: 0.5rem;
+      display: none;
+    }
+    .auth-success.is-visible { display: block; }
+
     /* ── Botão principal ── */
     .auth-btn-primary {
       width: 100%; padding: 1rem;
@@ -198,6 +221,8 @@ function injetarModal() {
             <label class="auth-label" for="loginSenha">Senha</label>
             <input class="auth-input" type="password" id="loginSenha" placeholder="••••••••" autocomplete="current-password">
           </div>
+          <button class="auth-forgot" id="btnEsqueceuSenha">Esqueceu sua senha?</button>
+          <div class="auth-success" id="resetSucesso">E-mail de recuperação enviado! Verifique sua caixa de entrada.</div>
           <div class="auth-error" id="loginErro"></div>
           <button class="auth-btn-primary" id="btnEntrar">Entrar</button>
           <button class="auth-skip" id="btnSkipLogin">Continuar sem login</button>
@@ -220,6 +245,10 @@ function injetarModal() {
           <div class="auth-field">
             <label class="auth-label" for="cadSenha">Senha</label>
             <input class="auth-input" type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+          </div>
+          <div class="auth-field">
+            <label class="auth-label" for="cadConfirmarSenha">Confirmar senha</label>
+            <input class="auth-input" type="password" id="cadConfirmarSenha" placeholder="Repita a senha" autocomplete="new-password">
           </div>
           <div class="auth-error" id="cadErro"></div>
           <button class="auth-btn-primary" id="btnCadastrar">Criar conta</button>
@@ -262,12 +291,31 @@ function setupModal() {
   document.getElementById('btnSkipLogin').addEventListener('click', fecharModal);
   document.getElementById('btnSkipCadastro').addEventListener('click', fecharModal);
 
+  // Esqueceu a senha
+  document.getElementById('btnEsqueceuSenha').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const erroEl = document.getElementById('loginErro');
+    const sucessoEl = document.getElementById('resetSucesso');
+    erroEl.textContent = '';
+    sucessoEl.classList.remove('is-visible');
+
+    if (!email) { erroEl.textContent = 'Digite seu e-mail acima para recuperar a senha.'; return; }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      sucessoEl.classList.add('is-visible');
+    } catch (e) {
+      erroEl.textContent = traduzirErroFirebase(e.code);
+    }
+  });
+
   // Entrar
   document.getElementById('btnEntrar').addEventListener('click', async () => {
     const email = document.getElementById('loginEmail').value.trim();
     const senha = document.getElementById('loginSenha').value;
     const erroEl = document.getElementById('loginErro');
     erroEl.textContent = '';
+    document.getElementById('resetSucesso').classList.remove('is-visible');
 
     if (!email || !senha) { erroEl.textContent = 'Preencha e-mail e senha.'; return; }
 
@@ -277,7 +325,6 @@ function setupModal() {
     try {
       await login(email, senha);
       fecharModal();
-      // Callback opcional após login
       if (window.__onAuthSuccess) window.__onAuthSuccess();
     } catch (e) {
       erroEl.textContent = traduzirErroFirebase(e.code);
@@ -288,16 +335,18 @@ function setupModal() {
 
   // Cadastrar
   document.getElementById('btnCadastrar').addEventListener('click', async () => {
-    const nome     = document.getElementById('cadNome').value.trim();
-    const telefone = document.getElementById('cadTelefone').value.trim();
-    const email    = document.getElementById('cadEmail').value.trim();
-    const senha    = document.getElementById('cadSenha').value;
-    const erroEl   = document.getElementById('cadErro');
+    const nome            = document.getElementById('cadNome').value.trim();
+    const telefone        = document.getElementById('cadTelefone').value.trim();
+    const email           = document.getElementById('cadEmail').value.trim();
+    const senha           = document.getElementById('cadSenha').value;
+    const confirmarSenha  = document.getElementById('cadConfirmarSenha').value;
+    const erroEl          = document.getElementById('cadErro');
     erroEl.textContent = '';
 
-    if (!nome || !email || !senha) { erroEl.textContent = 'Preencha todos os campos obrigatórios.'; return; }
+    if (!nome || !email || !senha || !confirmarSenha) { erroEl.textContent = 'Preencha todos os campos obrigatórios.'; return; }
     if (!nome.includes(' ')) { erroEl.textContent = 'Informe nome e sobrenome.'; return; }
     if (senha.length < 6) { erroEl.textContent = 'A senha deve ter no mínimo 6 caracteres.'; return; }
+    if (senha !== confirmarSenha) { erroEl.textContent = 'As senhas não coincidem. Verifique e tente novamente.'; return; }
 
     const btn = document.getElementById('btnCadastrar');
     btn.disabled = true; btn.textContent = 'Criando conta…';
