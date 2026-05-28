@@ -68,44 +68,55 @@
 
     // ══ RENDERIZAR TABELA ══
     function renderizarTabela() {
-      const lista = filtroAtual === 'TODOS'
-        ? todosPedidos
-        : todosPedidos.filter(p => p.status === filtroAtual);
+  const lista = filtroAtual === 'TODOS'
+    ? todosPedidos
+    : todosPedidos.filter(p => p.status === filtroAtual);
 
-      const tbody = document.getElementById('tabelaBody');
-      const tabela = document.getElementById('tabelaPedidos');
-      const empty  = document.getElementById('emptyMsg');
+  const tbody = document.getElementById('tabelaBody');
+  const tabela = document.getElementById('tabelaPedidos');
+  const empty  = document.getElementById('emptyMsg');
 
-      if (!lista.length) {
-        tabela.style.display = 'none';
-        empty.style.display = 'block';
-        return;
-      }
+  if (!lista.length) {
+    tabela.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
 
-      tabela.style.display = 'table';
-      empty.style.display = 'none';
+  tabela.style.display = 'table';
+  empty.style.display = 'none';
 
-      tbody.innerHTML = lista.map(p => {
-        const data = new Date(p.dateCreated).toLocaleDateString('pt-BR');
-        const metodo = traduzirMetodo(p.billingType);
-        const status = traduzirStatus(p.status);
-        const badgeClass = badgeCss(p.status);
-        const parcelas = p.installmentCount > 1 ? `${p.installmentCount}x` : '1x';
-        const valor = `R$ ${p.value.toFixed(2).replace('.', ',')}`;
+  tbody.innerHTML = lista.map(p => {
+    const data     = new Date(p.dateCreated).toLocaleDateString('pt-BR');
+    const cliente  = p.clienteDetalhes;
+    const nome     = cliente?.name || '—';
+    const cpf      = cliente?.cpfCnpj || '—';
+    const telefone = cliente?.phone || cliente?.mobilePhone || '—';
+    const endereco = cliente
+      ? `${cliente.address || ''}, ${cliente.addressNumber || ''} ${cliente.complement || ''} — ${cliente.province || ''}, ${cliente.city || ''}/${cliente.state || ''} — CEP: ${cliente.postalCode || ''}`
+      : '—';
+    const metodo   = traduzirMetodo(p.billingType);
+    const status   = traduzirStatus(p.status);
+    const badge    = badgeCss(p.status);
+    const parcelas = p.installmentCount > 1 ? `${p.installmentCount}x` : '1x';
+    const valor    = `R$ ${p.value.toFixed(2).replace('.', ',')}`;
+    const produto  = p.description || '—';
 
-        return `
-          <tr>
-            <td>${data}</td>
-            <td>${p.customer?.name || '—'}</td>
-            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${p.description || '—'}</td>
-            <td>${metodo}</td>
-            <td>${parcelas}</td>
-            <td style="font-weight:600">${valor}</td>
-            <td><span class="badge ${badgeClass}">${status}</span></td>
-          </tr>
-        `;
-      }).join('');
-    }
+    return `
+      <tr>
+        <td>${data}</td>
+        <td style="font-weight:600">${nome}</td>
+        <td>${cpf}</td>
+        <td>${telefone}</td>
+        <td style="min-width:280px;white-space:normal;line-height:1.5">${endereco}</td>
+        <td style="min-width:200px;white-space:normal;line-height:1.5">${produto}</td>
+        <td>${metodo}</td>
+        <td>${parcelas}</td>
+        <td style="font-weight:600">${valor}</td>
+        <td><span class="badge ${badge}">${status}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
 
     // ══ STATS ══
     function atualizarStats() {
