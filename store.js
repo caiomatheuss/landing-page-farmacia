@@ -2,7 +2,7 @@ const PRODUCTS = [
   {
     id: 'curcuma-500',
     name: 'Cúrcuma 500mg',
-    price: 89,
+    price: 1,
     image: 'images/products/curcuma-500mg.png',
     exclusive: true,
     purpose:
@@ -15,7 +15,7 @@ const PRODUCTS = [
   {
     id: 'kit-unhas',
     name: 'Kit Cuidado Para Unhas',
-    price: 149,
+    price: 1,
     image: 'images/products/kit-unhas.png',
     exclusive: true,
     purpose:
@@ -30,7 +30,7 @@ const PRODUCTS = [
   {
     id: 'malta-cabelao',
     name: 'Malta Cabelão',
-    price: 119,
+    price: 11,
     image: 'images/products/malta-cabelao.png',
     exclusive: true,
     purpose:
