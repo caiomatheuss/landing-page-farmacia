@@ -45,6 +45,7 @@ export const handler = async (event) => {
   venc.setDate(venc.getDate() + 1);
   const dueDate = venc.toISOString().split('T')[0];
 
+  // 1. Cria a cobrança PIX no Asaas
   const resp = await fetch(`${ASAAS_URL}/payments`, {
     method: 'POST',
     headers: { 'access_token': ASAAS_API_KEY, 'Content-Type': 'application/json' },
@@ -63,9 +64,15 @@ export const handler = async (event) => {
   if (!cobranca.id) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ erro: 'Erro ao gerar PIX', detalhes: cobranca }),
+      body: JSON.stringify({ erro: 'Erro ao gerar cobrança PIX', detalhes: cobranca }),
     };
   }
+
+  // 2. Busca o QR Code e Pix Copia e Cola
+  const qrResp = await fetch(`${ASAAS_URL}/payments/${cobranca.id}/pixQrCode`, {
+    headers: { 'access_token': ASAAS_API_KEY, 'Content-Type': 'application/json' },
+  });
+  const qrData = await qrResp.json();
 
   return {
     statusCode: 200,
@@ -73,6 +80,8 @@ export const handler = async (event) => {
     body: JSON.stringify({
       asaasId: cobranca.id,
       numero,
+      pixCopiaCola: qrData.payload || null,      // código para copiar e colar
+      qrCodeBase64: qrData.encodedImage || null,  // imagem do QR Code em base64
     }),
   };
 };

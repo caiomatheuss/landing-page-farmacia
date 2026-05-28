@@ -916,6 +916,9 @@
 
     /* ── Utilitários ── */
     .u-hidden { display: none !important; }
+
+    /* ── Animação spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 
@@ -1228,26 +1231,55 @@
           <!-- ── Painel: PIX ── -->
           <div class="co-method-panel" id="panelPix">
             <div class="co-pix-panel">
-              <!-- QR Code placeholder -->
-              <div class="co-pix-qr">
-              <img src="images/qr_code_teste.png" alt="QR Code PIX" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
-          </div>
 
-              <!-- Chave PIX -->
-              <div class="co-pix-key-box">
-                <span class="co-pix-key-label">Chave PIX</span>
-                <span class="co-pix-key-value" id="pixKeyDisplay">—</span>
+              <!-- Estado inicial: instrução antes de gerar -->
+              <div id="pixInstrucao" style="text-align:center;padding:1rem 0 0.5rem;">
+                <p style="font-size:0.85rem;color:#5a6b7d;line-height:1.6;margin:0;">
+                  Ao clicar em <strong>Finalizar pedido</strong>, o QR Code e o código PIX serão gerados automaticamente para você.
+                </p>
               </div>
 
-              <!-- Botão copiar -->
-              <button type="button" class="co-btn-pix-copy" id="btnCopyPix">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/>
-                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-                </svg>
-                Copiar chave PIX
-              </button>
-              <p class="co-pix-feedback" id="pixFeedback" aria-live="polite"></p>
+              <!-- QR Code dinâmico (aparece após gerar) -->
+              <div id="pixQrBox" style="display:none;flex-direction:column;align-items:center;gap:1rem;">
+                <div class="co-pix-qr">
+                  <img id="pixQrImg" src="" alt="QR Code PIX" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
+                </div>
+
+                <!-- Pix Copia e Cola -->
+                <div class="co-pix-key-box" style="width:100%;">
+                  <span class="co-pix-key-label">Pix Copia e Cola</span>
+                  <span class="co-pix-key-value" id="pixKeyDisplay" style="font-size:0.65rem;word-break:break-all;line-height:1.5;">—</span>
+                </div>
+
+                <!-- Botão copiar -->
+                <button type="button" class="co-btn-pix-copy" id="btnCopyPix">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                  </svg>
+                  Copiar código PIX
+                </button>
+                <p class="co-pix-feedback" id="pixFeedback" aria-live="polite"></p>
+              </div>
+
+              <!-- Aguardando pagamento (polling) -->
+              <div id="pollingBox" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:1.25rem 1rem 0.5rem;text-align:center;">
+                <div style="width:44px;height:44px;border:3px solid rgba(50,188,173,0.2);border-top-color:#32bcad;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                <p style="font-size:1.1rem;font-weight:600;color:#002B5B;margin:0;">Aguardando pagamento...</p>
+                <p style="font-size:0.78rem;color:#5a6b7d;line-height:1.6;max-width:22rem;margin:0;">
+                  Assim que o pagamento for confirmado, voce sera redirecionado automaticamente.
+                </p>
+                <p id="pollingTimer" style="font-size:0.68rem;color:#8a9ab0;letter-spacing:0.06em;" aria-live="polite"></p>
+              </div>
+
+              <!-- Pagamento confirmado -->
+              <div id="pollingConfirmed" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:1.75rem 1rem 0.5rem;text-align:center;">
+                <div style="width:64px;height:64px;border-radius:50%;background:rgba(50,188,100,0.1);border:1px solid rgba(50,188,100,0.3);display:flex;align-items:center;justify-content:center;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a7a48" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <p style="font-size:1.2rem;font-weight:600;color:#002B5B;margin:0;">Pagamento confirmado!</p>
+              </div>
+
             </div>
           </div>
 
@@ -1378,6 +1410,8 @@
       formData: {},
       cartItems: [],
       cartTotal: 0,
+      asaasId: null,
+      pollingInterval: null,
     };
 
     /* ════════════════════════════════════════════
@@ -1482,8 +1516,7 @@ function loadCart() {
        PIX — Exibe chave
     ════════════════════════════════════════════ */
     function setupPix() {
-      const display = document.getElementById('pixKeyDisplay');
-      if (display) display.textContent = CHAVE_PIX;
+      // QR Code e Pix Copia e Cola sao gerados dinamicamente ao finalizar pedido
     }
 
     /* ════════════════════════════════════════════
@@ -1725,10 +1758,114 @@ function setupFinalizarPedido() {
   btn.addEventListener('click', async () => {
     if (state.payMethod === 'cartao') {
       await processarCartao(btn);
+    } else if (state.payMethod === 'pix') {
+      await processarPix(btn);
     } else {
       confirmarPedido();
     }
   });
+}
+
+/* ====================================================
+   PIX — Gera cobrança, exibe QR Code e inicia polling
+==================================================== */
+async function processarPix(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Gerando PIX...';
+
+  try {
+    const resp = await fetch('/.netlify/functions/gerar-pix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cliente: state.formData,
+        itens: state.cartItems,
+        total: state.cartTotal,
+      }),
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok || !data.asaasId) {
+      btn.disabled = false;
+      btn.innerHTML = 'Finalizar pedido <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+      alert(data.erro || 'Erro ao gerar PIX. Tente novamente.');
+      return;
+    }
+
+    state.asaasId = data.asaasId;
+
+    // Exibe QR Code
+    const pixQrBox = document.getElementById('pixQrBox');
+    const pixInstrucao = document.getElementById('pixInstrucao');
+    const pixQrImg = document.getElementById('pixQrImg');
+    const pixKeyDisplay = document.getElementById('pixKeyDisplay');
+
+    if (pixInstrucao) pixInstrucao.style.display = 'none';
+
+    if (data.qrCodeBase64 && pixQrImg) {
+      pixQrImg.src = 'data:image/png;base64,' + data.qrCodeBase64;
+    }
+    if (data.pixCopiaCola && pixKeyDisplay) {
+      pixKeyDisplay.textContent = data.pixCopiaCola;
+    }
+    if (pixQrBox) pixQrBox.style.display = 'flex';
+
+    // Bloqueia botao e inicia polling
+    btn.style.display = 'none';
+    iniciarPolling(data.asaasId);
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = 'Finalizar pedido <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+    alert('Erro de conexao. Verifique sua internet e tente novamente.');
+  }
+}
+
+/* ====================================================
+   POLLING — Verifica status do PIX a cada 5 segundos
+==================================================== */
+function iniciarPolling(asaasId) {
+  const pollingBox       = document.getElementById('pollingBox');
+  const pollingConfirmed = document.getElementById('pollingConfirmed');
+  const timerEl          = document.getElementById('pollingTimer');
+
+  if (pollingBox) pollingBox.style.display = 'flex';
+
+  let tentativas = 0;
+  const MAX_TENTATIVAS = 72; // 6 minutos
+
+  state.pollingInterval = setInterval(async () => {
+    tentativas++;
+    if (timerEl) timerEl.textContent = 'Verificando... (' + (tentativas * 5) + 's)';
+
+    try {
+      const resp = await fetch('/.netlify/functions/verificar-pagamento?asaasId=' + asaasId);
+      const data = await resp.json();
+
+      if (data.status === 'RECEIVED' || data.status === 'CONFIRMED') {
+        pararPolling();
+        if (pollingBox) pollingBox.style.display = 'none';
+        if (pollingConfirmed) pollingConfirmed.style.display = 'flex';
+        setTimeout(() => confirmarPedido('pix'), 2000);
+        return;
+      }
+    } catch (e) {
+      console.warn('Erro ao verificar pagamento:', e);
+    }
+
+    if (tentativas >= MAX_TENTATIVAS) {
+      pararPolling();
+      confirmarPedido('pix'); // tempo esgotado, confirma mesmo assim
+    }
+  }, 5000);
+}
+
+function pararPolling() {
+  if (state.pollingInterval) {
+    clearInterval(state.pollingInterval);
+    state.pollingInterval = null;
+  }
 }
 
 async function processarCartao(btn) {
@@ -1775,7 +1912,7 @@ async function processarCartao(btn) {
 
 function confirmarPedido(metodo) {
   metodo = metodo || state.payMethod;
-  localStorage.removeItem('arte_cart');
+  localStorage.removeItem('arte-pharma-cart');
 
   const msgs = {
     cartao: 'Obrigado! Seu pagamento com cartão foi aprovado. Você receberá a confirmação por e-mail.',
