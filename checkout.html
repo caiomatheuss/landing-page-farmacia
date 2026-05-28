@@ -1710,28 +1710,77 @@ function loadCart() {
 }
 
     /* ════════════════════════════════════════════
-       FINALIZAR PEDIDO
-    ════════════════════════════════════════════ */
-    function setupFinalizarPedido() {
-      const btn = document.getElementById('btnFinalizarPedido');
-      if (!btn) return;
+   FINALIZAR PEDIDO
+════════════════════════════════════════════ */
+function setupFinalizarPedido() {
+  const btn = document.getElementById('btnFinalizarPedido');
+  if (!btn) return;
 
-      btn.addEventListener('click', () => {
-        // Limpa carrinho
-        localStorage.removeItem('arte-pharma-cart');
-
-        // Mensagem de confirmação por método
-        const msgs = {
-          cartao: 'Obrigado! Seu pagamento com cartão está sendo processado. Você receberá a confirmação por e-mail.',
-          pix:    'Obrigado! Assim que identificarmos o pagamento PIX, seu pedido será liberado.',
-          boleto: 'Obrigado! Seu boleto foi gerado. O pedido será processado após o pagamento.',
-        };
-        const confirmText = document.getElementById('confirmText');
-        if (confirmText) confirmText.textContent = msgs[state.payMethod] || msgs.cartao;
-
-        goToStep(3);
-      });
+  btn.addEventListener('click', async () => {
+    if (state.payMethod === 'cartao') {
+      await processarCartao(btn);
+    } else {
+      confirmarPedido();
     }
+  });
+}
+
+async function processarCartao(btn) {
+  const numero   = document.getElementById('inputCardNum')?.value.trim();
+  const nome     = document.getElementById('inputCardName')?.value.trim();
+  const validade = document.getElementById('inputCardExp')?.value.trim();
+  const cvv      = document.getElementById('inputCardCvv')?.value.trim();
+  const parcelas = parseInt(document.getElementById('selectParcelas')?.value || '1');
+
+  if (!numero || numero.replace(/\s/g,'').length < 16) {
+    alert('Informe o número do cartão completo.'); return;
+  }
+  if (!nome) { alert('Informe o nome como está no cartão.'); return; }
+  if (!validade || validade.length < 5) { alert('Informe a validade do cartão.'); return; }
+  if (!cvv || cvv.length < 3) { alert('Informe o CVV do cartão.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Processando pagamento…';
+
+  const payload = {
+    cliente: state.formData,
+    itens: state.cartItems,
+    total: state.cartTotal,
+    parcelas,
+    cartao: { numero, nome, validade, cvv },
+  };
+
+  const resp = await fetch('/.netlify/functions/processar-cartao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await resp.json();
+
+  if (resp.ok && data.sucesso) {
+    confirmarPedido('cartao');
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = 'Finalizar pedido <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+    alert(data.erro || 'Erro ao processar pagamento. Tente novamente.');
+  }
+}
+
+function confirmarPedido(metodo) {
+  metodo = metodo || state.payMethod;
+  localStorage.removeItem('arte_cart');
+
+  const msgs = {
+    cartao: 'Obrigado! Seu pagamento com cartão foi aprovado. Você receberá a confirmação por e-mail.',
+    pix:    'Obrigado! Assim que identificarmos o pagamento PIX, seu pedido será liberado.',
+    boleto: 'Obrigado! Seu boleto foi gerado. O pedido será processado após o pagamento.',
+  };
+  const confirmText = document.getElementById('confirmText');
+  if (confirmText) confirmText.textContent = msgs[metodo] || msgs.cartao;
+
+  goToStep(3);
+}
 
     /* ════════════════════════════════════════════
        EVENTOS GERAIS
