@@ -1673,24 +1673,41 @@ function loadCart() {
        BOLETO — Gerar
     ════════════════════════════════════════════ */
     function setupBoleto() {
-      const btn     = document.getElementById('btnGerarBoleto');
-      const success = document.getElementById('boletoSuccess');
-      const link    = document.getElementById('boletoLink');
-      if (!btn) return;
+  const btn     = document.getElementById('btnGerarBoleto');
+  const success = document.getElementById('boletoSuccess');
+  const link    = document.getElementById('boletoLink');
+  if (!btn) return;
 
-      btn.addEventListener('click', () => {
-        // Aqui você pode chamar a API real de boleto
-        // Por enquanto, simula sucesso
-        btn.disabled = true;
-        btn.textContent = 'Gerando…';
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Gerando…';
 
-        setTimeout(() => {
-          btn.style.display = 'none';
-          if (success) success.classList.add('is-visible');
-          if (link) link.href = LINK_BOLETO_BASE;
-        }, 1500);
-      });
+    const payload = {
+      cliente: state.formData,
+      itens: state.cartItems,
+      total: state.cartTotal,
+    };
+
+    const resp = await fetch('/.netlify/functions/gerar-boleto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await resp.json();
+
+    if (resp.ok && data.boletoUrl) {
+      btn.style.display = 'none';
+      if (link) link.href = data.boletoUrl;
+      if (success) success.classList.add('is-visible');
+      window.open(data.boletoUrl, '_blank');
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Gerar boleto';
+      alert('Erro ao gerar boleto. Tente novamente ou entre em contato via WhatsApp.');
     }
+  });
+}
 
     /* ════════════════════════════════════════════
        FINALIZAR PEDIDO
