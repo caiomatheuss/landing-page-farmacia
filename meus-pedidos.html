@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Pedidos | Arte Pharmaceutica</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+
+  <style>
+    .mp-page { background: var(--off); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    .mp-header {
+      background: var(--navy);
+      padding: 1.25rem clamp(1.5rem, 6vw, 3rem);
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .mp-header-logo img { height: 48px; filter: brightness(0) invert(1); }
+    .mp-header-nav { display: flex; align-items: center; gap: 1.5rem; }
+    .mp-header-nav a {
+      font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+      font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.3s;
+    }
+    .mp-header-nav a:hover { color: var(--gold-light); }
+
+    /* ── Main ── */
+    .mp-main {
+      flex: 1; max-width: 900px; width: 100%;
+      margin: 0 auto; padding: clamp(2rem,5vw,3.5rem) clamp(1rem,4vw,2rem);
+    }
+
+    .mp-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 600; color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .mp-subtitle {
+      font-size: 0.85rem; color: var(--text-soft);
+      font-weight: 300; margin-bottom: 2.5rem;
+    }
+
+    /* ── Estado: carregando / vazio / não logado ── */
+    .mp-state {
+      text-align: center; padding: 4rem 2rem;
+      background: var(--white);
+      border: 1px solid rgba(0,43,91,0.07);
+      box-shadow: 0 8px 32px rgba(0,43,91,0.05);
+    }
+    .mp-state-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(197,160,89,0.1);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+    .mp-state-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 600; color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .mp-state-text {
+      font-size: 0.85rem; color: var(--text-soft);
+      font-weight: 300; line-height: 1.7; margin-bottom: 1.5rem;
+    }
+    .mp-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.85rem 1.75rem;
+      font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+      font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      background: var(--gold); color: var(--navy);
+      border: none; border-radius: 2px; cursor: pointer; text-decoration: none;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .mp-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+    /* ── Lista de pedidos ── */
+    .mp-list { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .mp-card {
+      background: var(--white);
+      border: 1px solid rgba(0,43,91,0.07);
+      box-shadow: 0 4px 20px rgba(0,43,91,0.05);
+      overflow: hidden;
+    }
+
+    .mp-card-header {
+      padding: 1.25rem 1.5rem;
+      background: rgba(0,43,91,0.02);
+      border-bottom: 1px solid rgba(0,43,91,0.06);
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      align-items: center; justify-content: space-between;
+    }
+
+    .mp-card-num {
+      font-family: 'DM Sans', sans-serif; font-size: 0.65rem;
+      font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--navy);
+    }
+    .mp-card-date {
+      font-size: 0.78rem; color: var(--text-soft); font-weight: 300;
+    }
+
+    .mp-badge {
+      padding: 0.3rem 0.85rem; border-radius: 50px;
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .mp-badge--pago       { background: rgba(50,188,100,0.12); color: #1a7a48; }
+    .mp-badge--pendente   { background: rgba(197,160,89,0.15); color: #8a6520; }
+    .mp-badge--cancelado  { background: rgba(224,82,82,0.1);   color: #c03030; }
+    .mp-badge--confirmed  { background: rgba(50,188,100,0.12); color: #1a7a48; }
+    .mp-badge--received   { background: rgba(50,150,220,0.12); color: #1a5c9a; }
+
+    .mp-card-body { padding: 1.25rem 1.5rem; }
+
+    .mp-items { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+    .mp-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; color: var(--text); }
+    .mp-item-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); flex-shrink: 0;
+    }
+
+    .mp-card-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(0,43,91,0.06);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    }
+    .mp-total-label { font-size: 0.72rem; color: var(--text-soft); font-weight: 300; }
+    .mp-total-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem; font-weight: 600; color: var(--gold);
+    }
+    .mp-metodo {
+      font-size: 0.72rem; color: var(--text-soft);
+      font-weight: 300; letter-spacing: 0.04em;
+    }
+
+    /* ── Footer ── */
+    .mp-footer {
+      background: var(--navy); padding: 1.5rem clamp(1.5rem,6vw,3rem);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .mp-footer p { font-size: 0.7rem; color: rgba(255,255,255,0.3); letter-spacing: 0.06em; }
+
+    @media (max-width: 600px) {
+      .mp-card-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+  </style>
+</head>
+
+<body class="mp-page">
+
+  <!-- Header -->
+  <header class="mp-header">
+    <a href="index.html">
+      <img src="images/logo-arte.png" alt="Arte Pharmaceutica" style="height:48px;filter:brightness(0) invert(1)">
+    </a>
+    <nav class="mp-header-nav">
+      <a href="index.html">Início</a>
+      <a href="index.html#showroom">Produtos</a>
+      <div id="navUserArea"></div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="mp-main">
+    <h1 class="mp-title">Meus Pedidos</h1>
+    <p class="mp-subtitle">Acompanhe o status das suas compras</p>
+
+    <div id="mpContent">
+      <!-- Conteúdo injetado via JS -->
+      <div class="mp-state">
+        <div class="mp-state-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div class="mp-state-title">Carregando…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mp-footer">
+    <p>© 2026 Arte Pharmaceutica. Todos os direitos reservados.</p>
+  </footer>
+
+  <script type="module">
+    import { getUsuarioAtual } from './auth.js';
+    import { abrirModal }      from './login-modal.js';
+
+    const ASAAS_URL = '/.netlify/functions';
+    const content   = document.getElementById('mpContent');
+
+    const statusMap = {
+      PENDING:    { label: 'Pendente',   cls: 'mp-badge--pendente' },
+      RECEIVED:   { label: 'Pago',       cls: 'mp-badge--pago' },
+      CONFIRMED:  { label: 'Confirmado', cls: 'mp-badge--confirmed' },
+      OVERDUE:    { label: 'Vencido',    cls: 'mp-badge--cancelado' },
+      REFUNDED:   { label: 'Estornado',  cls: 'mp-badge--cancelado' },
+    };
+
+    const metodoMap = {
+      CREDIT_CARD: 'Cartão de Crédito',
+      PIX:         'PIX',
+      BOLETO:      'Boleto',
+    };
+
+    function renderVazio() {
+      content.innerHTML = `
+        <div class="mp-state">
+          <div class="mp-state-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+          </div>
+          <div class="mp-state-title">Nenhum pedido encontrado</div>
+          <p class="mp-state-text">Você ainda não fez nenhum pedido com este e-mail.</p>
+          <a href="index.html#showroom" class="mp-btn">Ver produtos</a>
+        </div>`;
+    }
+
+    function renderNaoLogado() {
+      content.innerHTML = `
+        <div class="mp-state">
+          <div class="mp-state-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="mp-state-title">Faça login para ver seus pedidos</div>
+          <p class="mp-state-text">Entre na sua conta para acompanhar o status das suas compras.</p>
+          <button class="mp-btn" id="btnLoginPedidos">Entrar na minha conta</button>
+        </div>`;
+      document.getElementById('btnLoginPedidos').addEventListener('click', () => {
+        window.__onAuthSuccess = () => window.location.reload();
+        abrirModal('login');
+      });
+    }
+
+    function renderPedidos(pedidos) {
+      if (!pedidos.length) { renderVazio(); return; }
+
+      const html = pedidos.map(p => {
+        const data    = new Date(p.dateCreated).toLocaleDateString('pt-BR');
+        const status  = statusMap[p.status] || { label: p.status, cls: 'mp-badge--pendente' };
+        const metodo  = metodoMap[p.billingType] || p.billingType;
+        const valor   = `R$ ${p.value.toFixed(2).replace('.', ',')}`;
+        const descr   = p.description || '—';
+
+        return `
+          <div class="mp-card">
+            <div class="mp-card-header">
+              <div>
+                <div class="mp-card-num">Pedido #${p.externalReference || p.id.slice(-8).toUpperCase()}</div>
+                <div class="mp-card-date">${data}</div>
+              </div>
+              <span class="mp-badge ${status.cls}">${status.label}</span>
+            </div>
+            <div class="mp-card-body">
+              <ul class="mp-items">
+                <li class="mp-item"><span class="mp-item-dot"></span>${descr}</li>
+              </ul>
+            </div>
+            <div class="mp-card-footer">
+              <span class="mp-metodo">${metodo}</span>
+              <div style="text-align:right">
+                <div class="mp-total-label">Total</div>
+                <div class="mp-total-val">${valor}</div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+
+      content.innerHTML = `<div class="mp-list">${html}</div>`;
+    }
+
+    async function carregarPedidos(email) {
+      const resp = await fetch(`${ASAAS_URL}/buscar-pedidos-email?email=${encodeURIComponent(email)}`);
+      const data = await resp.json();
+      return data.pedidos || [];
+    }
+
+    // ── Init ──────────────────────────────────
+    const user = await getUsuarioAtual();
+
+    if (!user) {
+      renderNaoLogado();
+    } else {
+      content.innerHTML = `<div class="mp-state"><div class="mp-state-title" style="color:#8a9ab0">Buscando seus pedidos…</div></div>`;
+      const pedidos = await carregarPedidos(user.email);
+      renderPedidos(pedidos);
+    }
+  </script>
+
+</body>
+</html>
