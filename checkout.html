@@ -2194,20 +2194,26 @@ async function processarCartao(btn) {
     cartao: { numero, nome, validade, cvv },
   };
 
-  const resp = await fetch('/.netlify/functions/processar-cartao', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const resp = await fetch('/.netlify/functions/processar-cartao', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
-  const data = await resp.json();
+    const data = await resp.json();
 
-  if (resp.ok && data.sucesso) {
-    confirmarPedido('cartao');
-  } else {
+    if (resp.ok && data.sucesso) {
+      confirmarPedido('cartao');
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = 'Finalizar pedido <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+      alert(data.erro || 'Cartão recusado. Verifique os dados e tente novamente.');
+    }
+  } catch (err) {
     btn.disabled = false;
     btn.innerHTML = 'Finalizar pedido <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
-    alert(data.erro || 'Erro ao processar pagamento. Tente novamente.');
+    alert('Erro de conexão. Tente novamente.');
   }
 }
 
