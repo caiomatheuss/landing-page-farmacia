@@ -66,7 +66,15 @@ function formatPrice(value) {
 
 function loadCart() {
   try {
-    return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+    const raw = JSON.parse(localStorage.getItem(CART_KEY)) || [];
+    // Filtra itens cujo id não existe mais nos produtos cadastrados
+    const validIds = PRODUCTS.map(p => p.id);
+    const clean = raw.filter(item => validIds.includes(item.id));
+    // Se havia lixo, já limpa o localStorage
+    if (clean.length !== raw.length) {
+      localStorage.setItem(CART_KEY, JSON.stringify(clean));
+    }
+    return clean;
   } catch {
     return [];
   }

@@ -1450,9 +1450,15 @@ function loadCart() {
   try {
     const raw = localStorage.getItem('arte-pharma-cart');
     const items = raw ? JSON.parse(raw) : [];
-    state.cartItems = items.map(item => {
-      const p = PRODUCTS_PRICES[item.id] || {};
-      return { id: item.id, name: p.name || item.id, price: p.price || 0, qty: item.qty || 1, img: p.img || '' };
+    // Só processa itens que existem no catálogo — descarta lixo de testes anteriores
+    const validItems = items.filter(item => PRODUCTS_PRICES[item.id]);
+    // Se havia itens inválidos, já limpa o localStorage
+    if (validItems.length !== items.length) {
+      localStorage.setItem('arte-pharma-cart', JSON.stringify(validItems.map(i => ({ id: i.id, qty: i.qty }))));
+    }
+    state.cartItems = validItems.map(item => {
+      const p = PRODUCTS_PRICES[item.id];
+      return { id: item.id, name: p.name, price: p.price, qty: item.qty || 1, img: p.img };
     });
     state.cartTotal = state.cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   } catch (e) {
