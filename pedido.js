@@ -94,7 +94,7 @@
     const endereco = cliente
       ? `${cliente.address || ''}, ${cliente.addressNumber || ''} ${cliente.complement || ''} — ${cliente.province || ''}, ${cliente.city || ''}/${cliente.state || ''} — CEP: ${cliente.postalCode || ''}`
       : '—';
-    const metodo   = traduzirMetodo(p.billingType);
+    const metodo   = traduzirMetodo(p.billingType, p.description);
     const status   = traduzirStatus(p.status);
     const badge    = badgeCss(p.status);
     const parcelas = p.installmentCount > 1 ? `${p.installmentCount}x` : '1x';
@@ -131,7 +131,13 @@
     }
 
     // ══ HELPERS ══
-    function traduzirMetodo(tipo) {
+    function traduzirMetodo(tipo, descricao) {
+      if (tipo === 'UNDEFINED') {
+        // Extrai a unidade da descrição: "[RETIRADA NA LOJA] Matriz ..."
+        const match = descricao && descricao.match(/\[RETIRADA NA LOJA\]\s*([^|]+)/);
+        const unidade = match ? match[1].trim() : '';
+        return unidade ? `Retirada — ${unidade.split(' — ')[0]}` : 'Retirada na loja';
+      }
       const map = { CREDIT_CARD: 'Cartão', BOLETO: 'Boleto', PIX: 'PIX', DEBIT_CARD: 'Débito' };
       return map[tipo] || tipo;
     }

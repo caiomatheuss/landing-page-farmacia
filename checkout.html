@@ -376,6 +376,77 @@
     .co-pay-icon--card { background: rgba(0,43,91,0.08); }
     .co-pay-icon--pix  { background: rgba(50,188,173,0.12); }
     .co-pay-icon--bol  { background: rgba(197,160,89,0.12); }
+    .co-pay-icon--ret  { background: rgba(34,139,34,0.10); }
+
+    /* Separador visual antes da opção de retirada */
+    .co-pay-separator {
+      border: none;
+      border-top: 1px solid rgba(0,43,91,0.1);
+      margin: 0.5rem 0;
+    }
+
+    /* Seletor de unidade de retirada */
+    .co-retirada-panel {
+      padding: 1.25rem 1rem;
+    }
+    .co-retirada-opcoes {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 0;
+    }
+    .co-retirada-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border: 1.5px solid rgba(0,43,91,0.15);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .co-retirada-label:hover { border-color: #C5A059; background: rgba(197,160,89,0.04); }
+    .co-retirada-input { display: none; }
+    .co-retirada-input:checked + .co-retirada-label {
+      border-color: #C5A059;
+      background: rgba(197,160,89,0.06);
+    }
+    .co-retirada-dot {
+      width: 18px; height: 18px; min-width: 18px;
+      border-radius: 50%;
+      border: 2px solid #b0bec5;
+      margin-top: 2px;
+      transition: border-color 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .co-retirada-input:checked + .co-retirada-label .co-retirada-dot {
+      border-color: #C5A059;
+      background: #C5A059;
+    }
+    .co-retirada-dot::after {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: white;
+      display: none;
+    }
+    .co-retirada-input:checked + .co-retirada-label .co-retirada-dot::after { display: block; }
+    .co-retirada-info { flex: 1; }
+    .co-retirada-nome {
+      font-size: 0.88rem; font-weight: 600; color: #002B5B; margin-bottom: 0.2rem;
+    }
+    .co-retirada-end {
+      font-size: 0.75rem; color: #5a6b7d; line-height: 1.5;
+    }
+    .co-retirada-aviso {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(34,139,34,0.07);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: #2d6a2d;
+      line-height: 1.5;
+    }
 
     .co-pay-text { flex: 1; }
 
@@ -1194,6 +1265,27 @@
               </span>
             </label>
 
+            <!-- Separador -->
+            <hr class="co-pay-separator">
+
+            <!-- Retirar na loja -->
+            <label class="co-pay-option">
+              <input type="radio" name="payMethod" value="retirada">
+              <span class="co-pay-label">
+                <span class="co-pay-radio" aria-hidden="true"></span>
+                <span class="co-pay-icon co-pay-icon--ret">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#228B22" stroke-width="1.5">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                </span>
+                <span class="co-pay-text">
+                  <span class="co-pay-name">Retirar na loja</span>
+                  <span class="co-pay-desc">Escolha a unidade e retire pessoalmente</span>
+                </span>
+              </span>
+            </label>
+
           </div>
 
           <!-- ── Painel: Cartão ── -->
@@ -1349,6 +1441,41 @@
 
       <!-- ════ ETAPA 3 — CONFIRMAÇÃO ════ -->
       <section class="co-form-panel u-hidden" id="step3Panel" aria-labelledby="step3Title">
+          <!-- ── Painel: Retirada na loja ── -->
+          <div class="co-method-panel" id="panelRetirada">
+            <div class="co-retirada-panel">
+              <p style="font-size:0.82rem;color:#5a6b7d;margin:0 0 1rem;">Escolha em qual unidade deseja retirar o pedido:</p>
+              <div class="co-retirada-opcoes">
+
+                <div>
+                  <input class="co-retirada-input" type="radio" name="unidadeRetirada" id="retMatriz" value="Matriz — Rua Dona Izabel A Redentora, 2076 — Centro — São José dos Pinhais/PR">
+                  <label class="co-retirada-label" for="retMatriz">
+                    <span class="co-retirada-dot"></span>
+                    <div class="co-retirada-info">
+                      <div class="co-retirada-nome">Matriz</div>
+                      <div class="co-retirada-end">Rua Dona Izabel A Redentora, 2076 — Centro<br>São José dos Pinhais — PR, CEP 83005-010</div>
+                    </div>
+                  </label>
+                </div>
+
+                <div>
+                  <input class="co-retirada-input" type="radio" name="unidadeRetirada" id="retFilial" value="Filial — Rua Visconde do Rio Branco, 1945 — Centro — São José dos Pinhais/PR">
+                  <label class="co-retirada-label" for="retFilial">
+                    <span class="co-retirada-dot"></span>
+                    <div class="co-retirada-info">
+                      <div class="co-retirada-nome">Filial</div>
+                      <div class="co-retirada-end">Rua Visconde do Rio Branco, 1945 — Centro<br>São José dos Pinhais — PR</div>
+                    </div>
+                  </label>
+                </div>
+
+              </div>
+              <div class="co-retirada-aviso">
+                Assim que seu pedido estiver pronto, entraremos em contato pelo WhatsApp ou e-mail para avisar que pode vir retirar.
+              </div>
+            </div>
+          </div>
+
         <div class="co-confirm-panel is-active">
           <div class="co-confirm-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a7a48" stroke-width="2">
@@ -1703,7 +1830,7 @@ function loadCart() {
         radio.addEventListener('change', () => {
           state.payMethod = radio.value;
           document.querySelectorAll('.co-method-panel').forEach(p => p.classList.remove('is-active'));
-          const panelMap = { cartao: 'panelCartao', pix: 'panelPix', boleto: 'panelBoleto' };
+          const panelMap = { cartao: 'panelCartao', pix: 'panelPix', boleto: 'panelBoleto', retirada: 'panelRetirada' };
           const panel = document.getElementById(panelMap[radio.value]);
           if (panel) panel.classList.add('is-active');
         });
@@ -1795,6 +1922,8 @@ function setupFinalizarPedido() {
       await processarCartao(btn);
     } else if (state.payMethod === 'pix') {
       await processarPix(btn);
+    } else if (state.payMethod === 'retirada') {
+      await processarRetirada(btn);
     } else {
       confirmarPedido();
     }
@@ -1945,14 +2074,52 @@ async function processarCartao(btn) {
   }
 }
 
+/* ====================================================
+   RETIRADA NA LOJA — Registra pedido sem cobrança online
+==================================================== */
+async function processarRetirada(btn) {
+  const unidade = document.querySelector('input[name="unidadeRetirada"]:checked');
+  if (!unidade) {
+    alert('Selecione a unidade onde deseja retirar o pedido.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Registrando pedido...';
+
+  // Salva localmente o endereço de retirada para exibir na confirmação
+  state.formData.retiradaUnidade = unidade.value;
+
+  // Registra o pedido no Netlify como "retirada" (sem processar pagamento)
+  try {
+    await fetch('/.netlify/functions/registrar-retirada', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cliente: state.formData,
+        itens: state.cartItems,
+        total: state.cartTotal,
+        unidadeRetirada: unidade.value,
+      }),
+    });
+  } catch (e) {
+    console.warn('Erro ao registrar retirada:', e);
+  }
+
+  confirmarPedido('retirada');
+}
+
 function confirmarPedido(metodo) {
   metodo = metodo || state.payMethod;
   localStorage.removeItem('arte-pharma-cart');
 
+  const unidade = state.formData?.retiradaUnidade || '';
+  const nomeUnidade = unidade.startsWith('Matriz') ? 'Matriz (Rua Dona Izabel)' : unidade.startsWith('Filial') ? 'Filial (Visconde do Rio Branco)' : 'loja';
   const msgs = {
-    cartao: 'Obrigado! Seu pagamento com cartão foi aprovado. Você receberá a confirmação por e-mail.',
-    pix:    'Obrigado! Assim que identificarmos o pagamento PIX, seu pedido será liberado.',
-    boleto: 'Obrigado! Seu boleto foi gerado. O pedido será processado após o pagamento.',
+    cartao:   'Obrigado! Seu pagamento com cartão foi aprovado. Você receberá a confirmação por e-mail.',
+    pix:      'Obrigado! Assim que identificarmos o pagamento PIX, seu pedido será liberado.',
+    boleto:   'Obrigado! Seu boleto foi gerado. O pedido será processado após o pagamento.',
+    retirada: `Pedido registrado! Entraremos em contato quando estiver pronto para retirada na ${nomeUnidade}.`,
   };
   const confirmText = document.getElementById('confirmText');
   if (confirmText) confirmText.textContent = msgs[metodo] || msgs.cartao;
