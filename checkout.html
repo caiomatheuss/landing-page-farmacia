@@ -1437,20 +1437,22 @@
     ════════════════════════════════════════════ */
     // Tabela de preços — igual ao store.js
 
+// PRODUCTS_PRICES — mantido em sincronia com store.js
+// Se mudar preço no store.js, mude aqui também
 const PRODUCTS_PRICES = {
-  'curcuma-500':   { name: 'Cúrcuma 500mg',         price: 89,  img: 'images/products/curcuma-500mg.png' },
-  'kit-unhas':     { name: 'Kit Cuidado Para Unhas', price: 149, img: 'images/products/kit-unhas.png' },
-  'malta-cabelao': { name: 'Malta Cabelão',          price: 119, img: 'images/products/malta-cabelao.png' },
-  'pantoarte':     { name: 'Pantoarte',              price: 95,  img: 'images/products/pantoarte.png' },
+  'curcuma-500':   { name: 'Cúrcuma 500mg',         price: 1,  img: 'images/products/curcuma-500mg.png' },
+  'kit-unhas':     { name: 'Kit Cuidado Para Unhas', price: 1,  img: 'images/products/kit-unhas.png' },
+  'malta-cabelao': { name: 'Malta Cabelão',          price: 11, img: 'images/products/malta-cabelao.png' },
+  'pantoarte':     { name: 'Pantoarte',              price: 95, img: 'images/products/pantoarte.png' },
 };
 
 function loadCart() {
   try {
-    const raw = localStorage.getItem('arte-pharma-cart'); // mesma chave do store.js
+    const raw = localStorage.getItem('arte-pharma-cart');
     const items = raw ? JSON.parse(raw) : [];
     state.cartItems = items.map(item => {
       const p = PRODUCTS_PRICES[item.id] || {};
-      return { name: p.name || item.id, price: p.price || 0, qty: item.qty || 1, img: p.img || '' };
+      return { id: item.id, name: p.name || item.id, price: p.price || 0, qty: item.qty || 1, img: p.img || '' };
     });
     state.cartTotal = state.cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   } catch (e) {
@@ -1571,18 +1573,15 @@ function loadCart() {
        REMOVER ITEM DO CARRINHO
     ════════════════════════════════════════════ */
     function removeCartItem(itemId) {
-      // Remove do state
       state.cartItems = state.cartItems.filter(i => i.id !== itemId);
       state.cartTotal = state.cartItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-
-      // Atualiza o localStorage
       const saved = state.cartItems.map(i => ({ id: i.id, qty: i.qty }));
       localStorage.setItem('arte-pharma-cart', JSON.stringify(saved));
-
-      // Re-renderiza resumo e parcelas
       renderSummary();
       populateParcelas();
     }
+    // Expõe no escopo global para o onclick do innerHTML funcionar
+    window.removeCartItem = removeCartItem;
 
     /* ════════════════════════════════════════════
        VALIDAÇÃO — Etapa 1

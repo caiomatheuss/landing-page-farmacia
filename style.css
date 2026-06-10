@@ -14,7 +14,7 @@
   --text-soft: #5a6b7d;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --wrap: min(1120px, 88vw);
-  --section-pad: clamp(6rem, 14vw, 11rem);
+  --section-pad: clamp(3.5rem, 7vw, 6rem);
 }
 
 html { scroll-behavior: smooth; }
@@ -259,7 +259,7 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8rem 6vw 6rem;
+  padding: 5rem 6vw 4rem;
   background: var(--navy);
   overflow: hidden;
 }
@@ -508,7 +508,7 @@ a { color: inherit; }
   background: var(--white);
 }
 
-.servicos .title { margin-bottom: 4rem; }
+.servicos .title { margin-bottom: 2.5rem; }
 
 .servicos-list {
   list-style: none;
@@ -573,7 +573,7 @@ a { color: inherit; }
   color: rgba(255, 255, 255, 0.55);
   font-weight: 300;
   max-width: 28rem;
-  margin-bottom: 4.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .selos {
@@ -631,7 +631,7 @@ a { color: inherit; }
   background: var(--off-warm);
 }
 
-.contato .title { margin-bottom: 3.5rem; }
+.contato .title { margin-bottom: 2rem; }
 
 .unidades-fluid {
   display: grid;
@@ -703,7 +703,7 @@ a { color: inherit; }
 
 /* ── Footer limpo ── */
 .footer {
-  padding: clamp(4rem, 10vw, 6rem) 6vw 3rem;
+  padding: clamp(2.5rem, 5vw, 4rem) 6vw 2rem;
   background: var(--navy);
   text-align: center;
 }
@@ -850,7 +850,7 @@ a { color: inherit; }
   background: var(--white);
 }
 
-.logistica .title { margin-bottom: clamp(3rem, 6vw, 5rem); }
+.logistica .title { margin-bottom: clamp(1.5rem, 3vw, 2.5rem); }
 
 .logistica-grid {
   list-style: none;
@@ -906,7 +906,7 @@ a { color: inherit; }
   overflow: hidden;
 }
 
-.vitrine-real .title { margin-bottom: clamp(3rem, 7vw, 5rem); }
+.vitrine-real .title { margin-bottom: clamp(1.5rem, 3vw, 2.5rem); }
 
 .real-floats {
   position: relative;
