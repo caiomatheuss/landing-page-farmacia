@@ -1,4 +1,6 @@
 /* global process */
+import { calcularPedido } from './_products.js';
+
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
 const ASAAS_URL = 'https://api.asaas.com/v3';
 
@@ -34,9 +36,21 @@ export const handler = async (event) => {
   }
 
   try {
-    const { cliente, itens, total, unidadeRetirada } = JSON.parse(event.body);
+    const { cliente, itens, unidadeRetirada } = JSON.parse(event.body);
+
+    // Preço vem só do catálogo do servidor — "total" do navegador é ignorado
+    let total, descricao;
+    try {
+      ({ total, descricao } = calcularPedido(itens));
+    } catch (err) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ erro: err.message }),
+      };
+    }
+
     const customerId = await criarOuBuscarCliente(cliente);
-    const descricao = itens.map(i => `${i.name} (x${i.qty})`).join(', ');
     const numero = `RET-${Date.now()}`;
 
     const venc = new Date();
