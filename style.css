@@ -14,7 +14,7 @@
   --text-soft: #5a6b7d;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --wrap: min(1120px, 88vw);
-  --section-pad: clamp(3.5rem, 7vw, 6rem);
+  --section-pad: clamp(2.75rem, 5vw, 4.5rem);
 }
 
 html { scroll-behavior: smooth; }
@@ -370,7 +370,7 @@ a { color: inherit; }
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: clamp(2rem, 6vw, 5rem);
+  gap: clamp(1.5rem, 4vw, 3rem);
   padding: 0 2rem;
 }
 
@@ -505,7 +505,7 @@ a { color: inherit; }
 /* ── Serviços (fluido, sem cards) ── */
 .servicos {
   padding: var(--section-pad) 6vw;
-  background: var(--white);
+  background: var(--off);
 }
 
 .servicos .title { margin-bottom: 2.5rem; }
@@ -928,8 +928,8 @@ a { color: inherit; }
 }
 
 .float-photo--wide {
-  max-width: 72%;
-  margin-left: auto;
+  max-width: 78%;
+  margin: 0 auto;
 }
 
 .float-photo--product {
@@ -1273,7 +1273,14 @@ a { color: inherit; }
   border: none;
   padding: 1.5rem 1rem 1rem;
   cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
   transition: filter 0.45s var(--ease), transform 0.45s var(--ease);
+}
+
+.product-visual:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 6px;
 }
 
 .product-visual img {
