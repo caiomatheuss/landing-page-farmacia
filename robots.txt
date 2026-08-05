@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /meus-pedidos.html
+Disallow: /.netlify/
+
+Sitemap: https://arte-pharmaceutica.netlify.app/sitemap.xml

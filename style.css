@@ -1271,6 +1271,7 @@ a { color: inherit; }
   position: relative;
   background: transparent;
   border: none;
+  border-radius: 10px;
   padding: 1.5rem 1rem 1rem;
   cursor: pointer;
   outline: none;
@@ -1288,6 +1289,7 @@ a { color: inherit; }
   max-height: 200px;
   object-fit: contain;
   margin: 0 auto;
+  border-radius: 10px;
   filter: drop-shadow(0 0 0 transparent);
   transition: filter 0.45s var(--ease), transform 0.45s var(--ease);
 }
@@ -1309,6 +1311,7 @@ a { color: inherit; }
   color: var(--navy);
   background: var(--gold);
   padding: 0.35rem 0.55rem;
+  border-radius: 4px;
   line-height: 1.2;
   max-width: 90%;
   text-align: left;
@@ -1350,6 +1353,7 @@ a { color: inherit; }
   text-transform: uppercase;
   background: transparent;
   border: 1px solid var(--gold);
+  border-radius: 4px;
   color: var(--navy);
   cursor: pointer;
   overflow: hidden;
