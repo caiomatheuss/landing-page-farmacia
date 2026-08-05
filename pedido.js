@@ -1,13 +1,13 @@
-// ══ SENHA DE ACESSO ══ (altere aqui)
-    const SENHA_ADMIN = 'arte2026';
-
-    // ══ ESTADO ══
+// ══ ESTADO ══
     let todosPedidos = [];
     let filtroAtual = 'TODOS';
 
     // ══ LOGIN ══
+    // A senha agora é validada no servidor (netlify/functions/admin-login.js).
+    // O front-end nunca conhece a senha real — só guarda o token que o
+    // servidor devolve depois de confirmar a senha.
     function verificarLogin() {
-      if (sessionStorage.getItem('adm_auth') === '1') mostrarAdmin();
+      if (sessionStorage.getItem('adm_token')) mostrarAdmin();
     }
 
     document.getElementById('btnLogin').addEventListener('click', fazerLogin);
@@ -15,20 +15,34 @@
       if (e.key === 'Enter') fazerLogin();
     });
 
-    function fazerLogin() {
+    async function fazerLogin() {
       const senha = document.getElementById('inputSenha').value;
       const erro  = document.getElementById('loginError');
-      if (senha === SENHA_ADMIN) {
-        sessionStorage.setItem('adm_auth', '1');
+      erro.textContent = '';
+
+      try {
+        const resp = await fetch('/.netlify/functions/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senha }),
+        });
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          erro.textContent = data.erro || 'Senha incorreta. Tente novamente.';
+          document.getElementById('inputSenha').value = '';
+          return;
+        }
+
+        sessionStorage.setItem('adm_token', data.token);
         mostrarAdmin();
-      } else {
-        erro.textContent = 'Senha incorreta. Tente novamente.';
-        document.getElementById('inputSenha').value = '';
+      } catch {
+        erro.textContent = 'Erro ao conectar com o servidor. Tente novamente.';
       }
     }
 
     document.getElementById('btnLogout').addEventListener('click', () => {
-      sessionStorage.removeItem('adm_auth');
+      sessionStorage.removeItem('adm_token');
       location.reload();
     });
 
@@ -44,9 +58,17 @@
       document.getElementById('tabelaPedidos').style.display = 'none';
       document.getElementById('emptyMsg').style.display = 'none';
 
-      const resp = await fetch('/.netlify/functions/listar-pedidos');
-      const data = await resp.json();
+      const resp = await fetch('/.netlify/functions/listar-pedidos', {
+        headers: { 'x-admin-token': sessionStorage.getItem('adm_token') || '' },
+      });
 
+      if (resp.status === 401) {
+        sessionStorage.removeItem('adm_token');
+        location.reload();
+        return;
+      }
+
+      const data = await resp.json();
       todosPedidos = data.data || [];
       renderizarTabela();
       atualizarStats();

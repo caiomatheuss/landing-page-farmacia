@@ -11,6 +11,18 @@ export const handler = async (event) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
+  // ── Validação de origem ──
+  // O Asaas envia o token configurado no painel dele no header
+  // 'asaas-access-token'. Sem checar isso, qualquer pessoa pode mandar
+  // um POST fingindo ser uma notificação de pagamento.
+  const tokenRecebido = event.headers['asaas-access-token'];
+  const tokenEsperado = process.env.ASAAS_WEBHOOK_TOKEN;
+
+  if (!tokenEsperado || tokenRecebido !== tokenEsperado) {
+    console.warn('[Webhook Asaas] Requisição rejeitada: token ausente ou inválido.');
+    return { statusCode: 401, body: 'Unauthorized' };
+  }
+
   let payload;
   try {
     payload = JSON.parse(event.body);
