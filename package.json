@@ -1,5 +1,8 @@
 {
   "name": "arte-pharmaceutica",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0"
+  }
 }

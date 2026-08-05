@@ -1,5 +1,5 @@
 /* global process */
-import { calcularPedido } from './_products.js';
+import { calcularPedido, salvarPedido } from './_products.js';
 
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
 const ASAAS_URL = 'https://api.asaas.com/v3';
@@ -38,10 +38,10 @@ export const handler = async (event) => {
   try {
     const { cliente, itens, unidadeRetirada } = JSON.parse(event.body);
 
-    // Preço vem só do catálogo do servidor — "total" do navegador é ignorado
-    let total, descricao;
+    // Preço vem só do banco de dados — "total" do navegador é ignorado
+    let total, descricao, itensCalculados, empresaId;
     try {
-      ({ total, descricao } = calcularPedido(itens));
+      ({ total, descricao, itensCalculados, empresaId } = await calcularPedido(itens));
     } catch (err) {
       return {
         statusCode: 400,
@@ -78,6 +78,22 @@ export const handler = async (event) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ erro: 'Erro ao registrar pedido', detalhes: cobranca }),
       };
+    }
+
+    // Salva o pedido de verdade no banco (não trava a resposta se falhar)
+    try {
+      await salvarPedido({
+        empresaId,
+        cliente,
+        numero,
+        metodo: 'RETIRADA',
+        total,
+        asaasPaymentId: cobranca.id,
+        enderecoEntrega: `[RETIRADA] ${unidadeRetirada}`,
+        itensCalculados,
+      });
+    } catch (err) {
+      console.error('[registrar-retirada] Falha ao salvar pedido no Neon:', err.message);
     }
 
     return {
