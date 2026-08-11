@@ -268,26 +268,14 @@ a { color: inherit; }
   position: absolute;
   inset: -20% -10%;
   background:
-    radial-gradient(ellipse 60% 50% at 75% 25%, rgba(197, 160, 89, 0.12) 0%, transparent 55%),
-    radial-gradient(ellipse 0% 0% at 15% 90%, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
-  will-change: transform;
-}
-
-.hero-glow {
-  position: absolute;
-  width: 1px;
-  height: 120%;
-  left: 12%;
-  top: -10%;
-  background: linear-gradient(180deg, transparent, var(--gold-muted), transparent);
-  opacity: 0.6;
+    radial-gradient(ellipse 55% 45% at 70% 20%, rgba(197, 160, 89, 0.08) 0%, transparent 55%);
   will-change: transform;
 }
 
 .hero-inner {
   position: relative;
   z-index: 2;
-  max-width: 52rem;
+  max-width: 48rem;
   text-align: center;
 }
 
@@ -307,12 +295,12 @@ a { color: inherit; }
 }
 
 .hero-lead {
-  font-size: clamp(1rem, 2vw, 1.15rem);
-  line-height: 1.85;
-  color: rgba(255, 255, 255, 0.62);
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.65);
   font-weight: 300;
-  max-width: 32rem;
-  margin: 0 auto 3rem;
+  max-width: 28rem;
+  margin: 0 auto 2.5rem;
 }
 
 .hero-cta {
@@ -324,32 +312,16 @@ a { color: inherit; }
 
 .hero .eyebrow { color: var(--gold-light); }
 
-
-.hero-scroll span {
-  display: block;
-  width: 1px;
-  height: 48px;
-  background: linear-gradient(180deg, var(--gold), transparent);
-  animation: scroll-pulse 2s ease-in-out infinite;
-}
-
-@keyframes scroll-pulse {
-  0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
-  50% { opacity: 1; transform: scaleY(1); }
-}
-
 /* ── Parallax bands (transição) ── */
 .parallax-band {
   position: relative;
-  height: clamp(100px, 18vh, 160px);
-  background: var(--navy);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.parallax-band--light { background: var(--off); height: clamp(80px, 12vh, 120px); }
+.parallax-band--light {
+  background: var(--off);
+  height: clamp(48px, 8vh, 80px);
+}
 
 .parallax-band--gold {
   background: linear-gradient(90deg, transparent, var(--gold-muted), transparent);
@@ -365,36 +337,6 @@ a { color: inherit; }
   transform: translateY(var(--parallax-offset, 0));
   will-change: transform;
 }
-
-.parallax-band-inner {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  padding: 0 2rem;
-}
-
-.stat-float {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 500;
-}
-
-.stat-float strong {
-  display: block;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: 0;
-  line-height: 1.2;
-  margin-bottom: 0.2rem;
-}
-
-.parallax-band--light .stat-float { color: var(--text-soft); }
-.parallax-band--light .stat-float strong { color: var(--navy); }
 
 /* ── História (profundidade) ── */
 .historia {
@@ -841,7 +783,6 @@ a { color: inherit; }
   .hero-cta { flex-direction: column; width: 100%; }
   .hero-cta .btn { width: 100%; }
   .servico-row { grid-template-columns: 3rem 1fr; gap: 1rem; padding: 2rem 0; }
-  .parallax-band-inner { gap: 2rem; }
 }
 
 /* ── Logística (fluido, 3 colunas) ── */
@@ -1980,6 +1921,6 @@ body.modal-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { transition: opacity 0.4s ease; transform: none; }
-  [data-parallax], [data-parallax-bg], .hero-parallax, .hero-glow { transform: none !important; }
+  [data-parallax], [data-parallax-bg], .hero-parallax { transform: none !important; }
   .marquee-track { animation: none; }
 }
