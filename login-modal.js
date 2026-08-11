@@ -77,8 +77,12 @@ function injetarModal() {
       display: flex; align-items: center; justify-content: center;
       opacity: 0; pointer-events: none;
       transition: opacity 0.4s ease;
-      padding: 1.25rem;
+      padding: 1rem;
+      overflow-y: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
+    #authOverlay::-webkit-scrollbar { display: none; width: 0; height: 0; }
     #authOverlay.is-open {
       opacity: 1; pointer-events: all;
     }
@@ -90,8 +94,8 @@ function injetarModal() {
     .auth-modal {
       background: #fff;
       width: min(560px, 100%);
-      max-height: min(92vh, 820px);
-      overflow-y: auto;
+      max-height: none;
+      overflow: visible;
       margin: 0;
       border-radius: 20px;
       box-shadow: 0 36px 90px rgba(0,20,50,0.3);
@@ -110,12 +114,12 @@ function injetarModal() {
 
     .auth-header {
       background: #002B5B;
-      padding: 1.65rem 2rem 1.35rem;
+      padding: 1rem 1.5rem 0.9rem;
       display: flex; align-items: flex-start; justify-content: space-between;
       border-radius: 20px 20px 0 0;
     }
     .auth-logo {
-      height: 44px; width: auto;
+      height: 36px; width: auto;
       filter: brightness(0) invert(1);
     }
     .auth-close {
@@ -131,7 +135,7 @@ function injetarModal() {
       border-bottom: 1px solid rgba(0,43,91,0.1);
     }
     .auth-tab {
-      flex: 1; padding: 1.1rem;
+      flex: 1; padding: 0.85rem;
       background: none; border: none; cursor: pointer;
       font-family: 'DM Sans', sans-serif;
       font-size: 0.72rem; font-weight: 600;
@@ -145,11 +149,11 @@ function injetarModal() {
       border-bottom-color: #C5A059;
     }
 
-    .auth-body { padding: 2rem 2.1rem 2.15rem; }
+    .auth-body { padding: 1.25rem 1.75rem 1.4rem; }
 
     .auth-field {
-      display: flex; flex-direction: column; gap: 0.4rem;
-      margin-bottom: 1.05rem;
+      display: flex; flex-direction: column; gap: 0.28rem;
+      margin-bottom: 0.7rem;
     }
     .auth-label {
       font-family: 'DM Sans', sans-serif;
@@ -158,10 +162,10 @@ function injetarModal() {
       color: #002B5B;
     }
     .auth-input {
-      width: 100%; padding: 0.95rem 1.1rem;
-      font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+      width: 100%; padding: 0.65rem 0.9rem;
+      font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
       color: #1a2b3c; background: #f8f7f4;
-      border: 1px solid rgba(0,43,91,0.12); border-radius: 12px;
+      border: 1px solid rgba(0,43,91,0.12); border-radius: 10px;
       outline: none; box-sizing: border-box;
       transition: border-color 0.3s, box-shadow 0.3s;
     }
@@ -187,20 +191,20 @@ function injetarModal() {
 
     .auth-reqs {
       list-style: none;
-      margin: 0 0 1.1rem;
-      padding: 0.85rem 1rem;
+      margin: 0 0 0.55rem;
+      padding: 0.5rem 0.75rem;
       background: rgba(0,43,91,0.035);
-      border-radius: 12px;
+      border-radius: 10px;
       border: 1px solid rgba(0,43,91,0.07);
     }
     .auth-reqs li {
       position: relative;
-      padding-left: 1.15rem;
+      padding-left: 1.1rem;
       font-family: 'DM Sans', sans-serif;
-      font-size: 0.72rem;
-      line-height: 1.55;
+      font-size: 0.65rem;
+      line-height: 1.35;
       color: #5a6b7d;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.15rem;
     }
     .auth-reqs li:last-child { margin-bottom: 0; }
     .auth-reqs li::before {
@@ -227,25 +231,25 @@ function injetarModal() {
     .auth-success.is-visible { display: block; }
 
     .auth-btn-primary {
-      width: 100%; padding: 1.05rem;
+      width: 100%; padding: 0.8rem;
       font-family: 'DM Sans', sans-serif;
       font-size: 0.72rem; font-weight: 600;
       letter-spacing: 0.16em; text-transform: uppercase;
       background: #C5A059; color: #002B5B;
       border: none; border-radius: 12px; cursor: pointer;
       transition: background 0.3s, transform 0.2s;
-      margin-top: 0.35rem;
+      margin-top: 0.15rem;
     }
     .auth-btn-primary:hover { background: #d4af6a; transform: translateY(-1px); }
     .auth-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .auth-skip {
-      width: 100%; padding: 0.85rem;
+      width: 100%; padding: 0.75rem;
       background: none; border: 1px solid rgba(0,43,91,0.15);
       font-family: 'DM Sans', sans-serif;
       font-size: 0.68rem; font-weight: 500;
       letter-spacing: 0.08em; color: #5a6b7d;
-      border-radius: 12px; cursor: pointer; margin-top: 0.85rem;
+      border-radius: 12px; cursor: pointer; margin-top: 0.65rem;
       transition: border-color 0.3s, color 0.3s;
     }
     .auth-skip:hover { border-color: #C5A059; color: #002B5B; }
