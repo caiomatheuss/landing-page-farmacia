@@ -13,6 +13,8 @@
   <meta property="og:locale" content="pt_BR">
   <meta name="twitter:card" content="summary_large_image">
   <title>Arte Pharmaceutica | Farmácia de Manipulação</title>
+  <link rel="icon" type="image/png" href="images/logo-arte.png">
+  <link rel="apple-touch-icon" href="images/logo-arte.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -52,7 +54,6 @@
     <li><a href="#campeoes">Campeões</a></li>
     <li><a href="#servicos">Especialidades</a></li>
     <li><a href="#showroom">Produtos</a></li>
-    <li><a href="#depoimentos">Depoimentos</a></li>
     <li><a href="#contato">Contato</a></li>
     <li><a href="#" data-instagram>Instagram</a></li>
     <li><a href="#" data-wa="matriz" class="nav-cta">WhatsApp</a></li>
@@ -69,7 +70,6 @@
   <a href="#campeoes" onclick="closeMenu()">Campeões</a>
   <a href="#servicos" onclick="closeMenu()">Especialidades</a>
   <a href="#showroom" onclick="closeMenu()">Produtos</a>
-  <a href="#depoimentos" onclick="closeMenu()">Depoimentos</a>
   <a href="#contato" onclick="closeMenu()">Contato</a>
   <a href="#" data-instagram onclick="closeMenu()">Instagram</a>
   <a href="#" data-wa="matriz" class="nav-cta" onclick="closeMenu()">WhatsApp</a>
@@ -119,20 +119,26 @@
   </div>
 </section>
 
-<!-- IMAGENS REAIS -->
-<section class="vitrine-real" aria-labelledby="vitrine-real-title">
-  <div class="wrap vitrine-real-wrap">
-    <p class="eyebrow reveal" id="vitrine-real-title">Nosso espaço</p>
-    <h2 class="title reveal">Ambiente pensado para você</h2>
-    <div class="real-floats">
-      <figure class="float-photo float-photo--wide reveal" data-parallax="0.14">
-        <img src="images/interior-farmacia.png" alt="Interior da farmácia Arte Pharmaceutica" loading="lazy">
-      </figure>
+<!-- COMO TRABALHAMOS -->
+<section class="como-trabalhamos" id="como-trabalhamos">
+  <div class="wrap como-trabalhamos-wrap">
+    <figure class="como-trabalhamos-photo float-photo reveal" data-parallax="0.12">
+      <img src="images/interior-farmacia.png" alt="Interior da farmácia Arte Pharmaceutica" loading="lazy">
+    </figure>
+    <div class="como-trabalhamos-copy">
+      <p class="eyebrow reveal">Como trabalhamos</p>
+      <h2 class="title reveal">Da formulação<br>à sua mão</h2>
+      <p class="body reveal">Na Arte Pharmaceutica, cada pedido passa por um fluxo cuidadoso: análise da prescrição, manipulação com insumos selecionados, controle de qualidade e entrega ou retirada no prazo combinado.</p>
+      <ul class="como-lista reveal">
+        <li>Manipulação sob medida, com farmacêutico responsável em cada etapa</li>
+        <li>Entrega rápida em até 48h, retirada na loja ou agendamento flexível</li>
+        <li>Orientação técnica clara — do uso à conservação da fórmula</li>
+      </ul>
+      <p class="real-badge reveal">
+        <span class="real-badge-dot" aria-hidden="true"></span>
+        Imagens reais de nossas instalações e produtos
+      </p>
     </div>
-    <p class="real-badge reveal">
-      <span class="real-badge-dot" aria-hidden="true"></span>
-      Imagens reais de nossas instalações e produtos
-    </p>
   </div>
 </section>
 
@@ -236,8 +242,8 @@
   </div>
 </section>
 
-<!-- DEPOIMENTOS -->
-<section class="depoimentos" id="depoimentos">
+<!-- DEPOIMENTOS (oculto temporariamente — preparado para API de avaliações reais) -->
+<section class="depoimentos is-hidden-section" id="depoimentos" aria-hidden="true" hidden>
   <div class="wrap">
     <p class="eyebrow reveal">Prova social</p>
     <h2 class="title reveal">Depoimentos</h2>
@@ -346,21 +352,31 @@
     <div class="unidades-fluid">
       <article class="unidade reveal">
         <h3 class="unidade-tag">Matriz</h3>
-        <address>Rua Dona Izabel A Redentora, 2076 — Centro<br>São José dos Pinhais - PR, 83005-010</address>
+        <div class="unidade-map">
+          <iframe title="Mapa da Matriz" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=Rua%20Dona%20Izabel%20A%20Redentora%2C%202076%2C%20S%C3%A3o%20Jos%C3%A9%20dos%20Pinhais%20-%20PR&z=16&output=embed"></iframe>
+          <a class="unidade-map-hit" href="https://www.google.com/maps/search/?api=1&query=Rua+Dona+Izabel+A+Redentora+2076+São+José+dos+Pinhais+PR" target="_blank" rel="noopener noreferrer" aria-label="Abrir Matriz no Google Maps"></a>
+        </div>
+        <a class="unidade-address" href="https://www.google.com/maps/search/?api=1&query=Rua+Dona+Izabel+A+Redentora+2076+São+José+dos+Pinhais+PR" target="_blank" rel="noopener noreferrer">
+          Rua Dona Izabel A Redentora, 2076 — Centro<br>São José dos Pinhais - PR, 83005-010
+        </a>
         <a href="tel:+5541991694197" class="unidade-tel">(41) 9169-4197</a>
         <div class="unidade-links">
           <a href="#" data-wa="matriz" class="link-gold">WhatsApp Matriz</a>
-          <a href="https://www.google.com/maps/search/?api=1&query=Rua+Dona+Izabel+A+Redentora+2076+São+José+dos+Pinhais" class="link-subtle" target="_blank" rel="noopener">Mapa</a>
         </div>
       </article>
       <span class="unidade-divider" aria-hidden="true"></span>
       <article class="unidade reveal">
         <h3 class="unidade-tag">Filial</h3>
-        <address>Rua Visconde do Rio Branco, 1945 — Centro<br>São José dos Pinhais - PR</address>
+        <div class="unidade-map">
+          <iframe title="Mapa da Filial" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=Rua%20Visconde%20do%20Rio%20Branco%2C%201945%2C%20S%C3%A3o%20Jos%C3%A9%20dos%20Pinhais%20-%20PR&z=16&output=embed"></iframe>
+          <a class="unidade-map-hit" href="https://www.google.com/maps/search/?api=1&query=Rua+Visconde+do+Rio+Branco+1945+São+José+dos+Pinhais+PR" target="_blank" rel="noopener noreferrer" aria-label="Abrir Filial no Google Maps"></a>
+        </div>
+        <a class="unidade-address" href="https://www.google.com/maps/search/?api=1&query=Rua+Visconde+do+Rio+Branco+1945+São+José+dos+Pinhais+PR" target="_blank" rel="noopener noreferrer">
+          Rua Visconde do Rio Branco, 1945 — Centro<br>São José dos Pinhais - PR
+        </a>
         <a href="tel:+5541991366263" class="unidade-tel">(41) 99136-6263</a>
         <div class="unidade-links">
           <a href="#" data-wa="filial" class="link-gold">WhatsApp Filial</a>
-          <a href="https://www.google.com/maps/search/?api=1&query=Rua+Visconde+do+Rio+Branco+1945+São+José+dos+Pinhais" class="link-subtle" target="_blank" rel="noopener">Mapa</a>
         </div>
       </article>
     </div>
@@ -387,7 +403,6 @@
       <a href="#campeoes">Campeões</a>
       <a href="#servicos">Especialidades</a>
       <a href="#showroom">Produtos</a>
-      <a href="#depoimentos">Depoimentos</a>
       <a href="#contato">Contato</a>
       <a href="#" data-instagram>Instagram</a>
       <a href="#" data-loja>Loja</a>
