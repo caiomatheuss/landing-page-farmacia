@@ -238,45 +238,6 @@ function setupCopyPix() {
   });
 }
 
-/* ════════════ BOLETO ════════════ */
-function setupBoleto() {
-  const btn     = document.getElementById('btnGerarBoleto');
-  const success = document.getElementById('boletoSuccess');
-  const link    = document.getElementById('boletoLink');
-  if (!btn) return;
-
-  btn.addEventListener('click', async () => {
-    btn.disabled = true; btn.textContent = 'Gerando…';
-    const resp = await fetch('/.netlify/functions/gerar-boleto', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cliente: state.formData, itens: state.cartItems, total: state.cartTotal }),
-    });
-    const data = await resp.json();
-    if (resp.ok && data.boletoUrl) {
-      btn.style.display = 'none';
-      if (link) link.href = data.boletoUrl;
-      if (success) success.classList.add('is-visible');
-      window.open(data.boletoUrl, '_blank');
-      await salvarPedido({
-        numero: data.numero, status: 'pendente', metodo_pagamento: 'boleto',
-        total: state.cartTotal, itens: JSON.stringify(state.cartItems),
-        cliente_nome: state.formData.nome, cliente_email: state.formData.email,
-        cliente_telefone: state.formData.telefone, cliente_cpf: state.formData.cpf,
-        endereco_rua: state.formData.rua, endereco_numero: state.formData.numero,
-        endereco_complemento: state.formData.complemento||'', endereco_bairro: state.formData.bairro,
-        endereco_cidade: state.formData.cidade, endereco_estado: state.formData.estado,
-        endereco_cep: state.formData.cep, asaas_id: data.asaasId, boleto_url: data.boletoUrl,
-      });
-      // Inicia polling após gerar boleto
-      iniciarPolling(data.asaasId, 'boleto');
-    } else {
-      btn.disabled = false; btn.textContent = 'Gerar boleto';
-      alert('Erro ao gerar boleto. Tente novamente.');
-    }
-  });
-}
-
 /* ════════════ FINALIZAR PEDIDO ════════════ */
 function setupFinalizarPedido() {
   const btn = document.getElementById('btnFinalizarPedido');
@@ -287,7 +248,6 @@ function setupFinalizarPedido() {
     } else if (state.payMethod === 'pix') {
       await processarPix(btn);
     }
-    // boleto já tem seu próprio fluxo no botão "Gerar boleto"
   });
 }
 
@@ -368,7 +328,6 @@ function confirmarPedido(metodo, confirmado = false) {
   const msgs = {
     cartao: 'Seu pagamento com cartão foi aprovado! Em breve você receberá a confirmação por e-mail.',
     pix:    confirmado ? 'PIX recebido e confirmado! Seu pedido já está sendo preparado.' : 'Pagamento PIX pendente. Assim que identificarmos, seu pedido será liberado.',
-    boleto: confirmado ? 'Boleto pago e confirmado! Seu pedido já está sendo preparado.' : 'Boleto gerado. O pedido será processado após o pagamento.',
   };
   const confirmText = document.getElementById('confirmText');
   if (confirmText) confirmText.textContent = msgs[metodo] || msgs.cartao;
@@ -381,7 +340,7 @@ function setupPayMethodSwitch() {
     radio.addEventListener('change', () => {
       state.payMethod = radio.value;
       document.querySelectorAll('.co-method-panel').forEach(p => p.classList.remove('is-active'));
-      const panelMap = { cartao: 'panelCartao', pix: 'panelPix', boleto: 'panelBoleto' };
+      const panelMap = { cartao: 'panelCartao', pix: 'panelPix' };
       document.getElementById(panelMap[radio.value])?.classList.add('is-active');
     });
   });
@@ -425,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
   applyMasks();
   setupPayMethodSwitch();
   setupCopyPix();
-  setupBoleto();
   setupFinalizarPedido();
   setupEvents();
   updateStepper(1);

@@ -1414,25 +1414,6 @@
               </span>
             </label>
 
-            <!-- Boleto -->
-            <label class="co-pay-option">
-              <input type="radio" name="payMethod" value="boleto">
-              <span class="co-pay-label">
-                <span class="co-pay-radio" aria-hidden="true"></span>
-                <span class="co-pay-icon co-pay-icon--bol">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5">
-                    <path d="M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"/>
-                    <path d="M7 8v8M9 8v8M11 8v8M14 8v8M17 8v8M13 8v8"/>
-                  </svg>
-                </span>
-                <span class="co-pay-text">
-                  <span class="co-pay-name">Boleto Bancário</span>
-                  <span class="co-pay-desc">Vencimento em 3 dias úteis</span>
-                </span>
-              </span>
-            </label>
-
-
           </div>
 
           <!-- ── Painel: Cartão ── -->
@@ -1540,39 +1521,6 @@
             </div>
           </div>
 
-          <!-- ── Painel: Boleto ── -->
-          <div class="co-method-panel" id="panelBoleto">
-            <div class="co-boleto-panel">
-              <div class="co-boleto-info">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 8v4M12 16h.01"/>
-                </svg>
-                <div class="co-boleto-info-text">
-                  <strong>Instruções do boleto</strong>
-                  Após gerar, você terá <strong>3 dias úteis</strong> para pagar em qualquer banco ou lotérica.
-                  O pedido será processado após a confirmação do pagamento.
-                </div>
-              </div>
-              <button type="button" class="co-btn-boleto" id="btnGerarBoleto">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M12 2v12M12 14l4-4M12 14l-4-4M5 20h14"/>
-                </svg>
-                Gerar boleto
-              </button>
-              <div class="co-boleto-success" id="boletoSuccess" aria-live="polite">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a7a48" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M8 12l3 3 5-5"/>
-                </svg>
-                <span class="co-boleto-success-text">
-                  Boleto gerado com sucesso! Verifique seu e-mail ou
-                  <a class="link-gold" id="boletoLink" href="#" target="_blank" rel="noopener">clique aqui para abrir</a>.
-                </span>
-              </div>
-            </div>
-          </div>
-
           <div class="co-section-divider"></div>
 
           <!-- Botão finalizar -->
@@ -1655,7 +1603,6 @@
     const CHAVE_PIX         = '00020101021126330014br.gov.bcb.pix0111102381569905204000053039865802BR5919CAIO M DE A RIBEIRO6013SAO JOSE DOS 62070503***63043E9E'; // Altere para sua chave PIX real
     const VALOR_TOTAL       = 0;          // Será calculado dinamicamente pelo carrinho
     const MAX_PARCELAS      = 6;          // Número máximo de parcelas sem juros
-    const LINK_BOLETO_BASE  = '#';        // URL do servidor para gerar boleto
     const WA_PHONE          = '5541991694197';
     const WA_MESSAGE        = 'Olá! Acabei de finalizar meu pedido no site. Pode me ajudar?';
 
@@ -1664,7 +1611,7 @@
     ════════════════════════════════════════════ */
     const state = {
       currentStep: 1,       // 1 = identificação | 2 = pagamento | 3 = confirmação
-      payMethod: 'cartao',  // 'cartao' | 'pix' | 'boleto'
+      payMethod: 'cartao',  // 'cartao' | 'pix'
       formData: {},
       cartItems: [],
       cartTotal: 0,
@@ -1964,7 +1911,7 @@ function loadCart() {
         radio.addEventListener('change', () => {
           state.payMethod = radio.value;
           document.querySelectorAll('.co-method-panel').forEach(p => p.classList.remove('is-active'));
-          const panelMap = { cartao: 'panelCartao', pix: 'panelPix', boleto: 'panelBoleto' };
+          const panelMap = { cartao: 'panelCartao', pix: 'panelPix' };
           const panel = document.getElementById(panelMap[radio.value]);
           if (panel) panel.classList.add('is-active');
         });
@@ -2003,46 +1950,6 @@ function loadCart() {
         }
       });
     }
-
-    /* ════════════════════════════════════════════
-       BOLETO — Gerar
-    ════════════════════════════════════════════ */
-    function setupBoleto() {
-  const btn     = document.getElementById('btnGerarBoleto');
-  const success = document.getElementById('boletoSuccess');
-  const link    = document.getElementById('boletoLink');
-  if (!btn) return;
-
-  btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    btn.textContent = 'Gerando…';
-
-    const payload = {
-      cliente: state.formData,
-      itens: state.cartItems,
-      total: state.cartTotal,
-    };
-
-    const resp = await fetch('/.netlify/functions/gerar-boleto', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await resp.json();
-
-    if (resp.ok && data.boletoUrl) {
-      btn.style.display = 'none';
-      if (link) link.href = data.boletoUrl;
-      if (success) success.classList.add('is-visible');
-      window.open(data.boletoUrl, '_blank');
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Gerar boleto';
-      alert('Erro ao gerar boleto. Tente novamente ou entre em contato via WhatsApp.');
-    }
-  });
-}
 
     /* ════════════════════════════════════════════
    FINALIZAR PEDIDO
@@ -2254,7 +2161,6 @@ function confirmarPedido(metodo) {
   const msgs = {
     cartao:   'Obrigado! Seu pagamento com cartão foi aprovado. Você receberá a confirmação por e-mail.',
     pix:      'Obrigado! Assim que identificarmos o pagamento PIX, seu pedido será liberado.',
-    boleto:   'Obrigado! Seu boleto foi gerado. O pedido será processado após o pagamento.',
     retirada: `Pedido registrado! Entraremos em contato quando estiver pronto para retirada na ${nomeUnidade}.`,
   };
   const confirmText = document.getElementById('confirmText');
@@ -2341,7 +2247,6 @@ function confirmarPedido(metodo) {
       applyMasks();
       setupPayMethodSwitch();
       setupCopyPix();
-      setupBoleto();
       setupFinalizarPedido();
       setupDeliveryToggle();
       setupEvents();
