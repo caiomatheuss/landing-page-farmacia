@@ -3,11 +3,10 @@
 //  Arte Pharmaceutica
 // ══════════════════════════════════════════════
 
-import { cadastrar, login, logout, getUsuarioAtual, onAuthStateChanged, auth } from './auth.js';
-import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { cadastrar, login, logout, getUsuarioAtual, onAuthStateChanged, redirecionarPorRole } from './auth.js';
 
 /* ── Requisitos de senha (edite aqui se precisar) ── */
-const SENHA_MIN = 6; // Firebase exige no mínimo 6 caracteres
+const SENHA_MIN = 6;
 const SENHA_MAX = 20;
 
 function validarSenha(senha) {
@@ -320,7 +319,7 @@ function injetarModal() {
           </div>
           <button type="button" class="auth-forgot" id="btnEsqueceuSenha">Esqueceu sua senha?</button>
           ${requisitosSenhaHTML('login')}
-          <div class="auth-success" id="resetSucesso">E-mail de recuperação enviado! Verifique sua caixa de entrada.</div>
+          <div class="auth-success" id="resetSucesso">Para redefinir a senha, fale conosco pelo WhatsApp da farmácia.</div>
           <div class="auth-error" id="loginErro"></div>
           <button class="auth-btn-primary" id="btnEntrar">Entrar</button>
           <button class="auth-skip" id="btnSkipLogin">Continuar sem login</button>
@@ -429,12 +428,7 @@ function setupModal() {
       return;
     }
 
-    try {
-      await sendPasswordResetEmail(auth, email);
-      sucessoEl.classList.add('is-visible');
-    } catch (e) {
-      erroEl.textContent = traduzirErroFirebase(e.code);
-    }
+    sucessoEl.classList.add('is-visible');
   });
 
   document.getElementById('btnEntrar').addEventListener('click', async () => {
@@ -454,12 +448,13 @@ function setupModal() {
     btn.textContent = 'Entrando…';
 
     try {
-      await login(email, senha);
+      const user = await login(email, senha);
       limparCamposAuth();
       fecharModal();
       if (window.__onAuthSuccess) window.__onAuthSuccess();
+      else if (!/checkout\.html/.test(location.pathname)) redirecionarPorRole(user);
     } catch (e) {
-      erroEl.textContent = traduzirErroFirebase(e.code);
+      erroEl.textContent = e.message || traduzirErroAuth(e);
       document.getElementById('loginSenha').value = '';
       atualizarChecklist('', 'loginReqs');
     } finally {
@@ -502,12 +497,13 @@ function setupModal() {
     btn.textContent = 'Criando conta…';
 
     try {
-      await cadastrar({ nome, telefone, email, senha });
+      const user = await cadastrar({ nome, telefone, email, senha });
       limparCamposAuth();
       fecharModal();
       if (window.__onAuthSuccess) window.__onAuthSuccess();
+      else if (!/checkout\.html/.test(location.pathname)) redirecionarPorRole(user);
     } catch (e) {
-      erroEl.textContent = traduzirErroFirebase(e.code);
+      erroEl.textContent = e.message || traduzirErroAuth(e);
       document.getElementById('cadSenha').value = '';
       document.getElementById('cadConfirmarSenha').value = '';
       atualizarChecklist('', 'cadReqs');
@@ -558,10 +554,13 @@ function atualizarNavbar(user) {
   if (!area) return;
 
   if (user) {
-    const nome = user.displayName || user.email;
+    const nome = user.displayName || user.nome || user.email;
+    const extra = user.role === 'admin'
+      ? `<a href="admin.html" class="nav-btn-login" style="text-decoration:none">Painel</a>`
+      : `<a href="meus-pedidos.html" class="nav-btn-login" style="text-decoration:none">Meus Pedidos</a>`;
     area.innerHTML = `
-      <span class="nav-user-name">Olá, ${nome.split(' ')[0]}</span>
-      <a href="meus-pedidos.html" class="nav-btn-login" style="text-decoration:none">Meus Pedidos</a>
+      <span class="nav-user-name">Olá, ${String(nome).split(' ')[0]}</span>
+      ${extra}
       <button class="nav-btn-logout" id="btnNavLogout">Sair</button>
     `;
     document.getElementById('btnNavLogout')?.addEventListener('click', async () => {
@@ -569,23 +568,17 @@ function atualizarNavbar(user) {
     });
   } else {
     area.innerHTML = `
-      <button class="nav-btn-login" id="btnNavLogin">Entrar / Cadastrar</button>
+      <a href="login.html" class="nav-btn-login" id="btnNavLogin" style="text-decoration:none">Entrar / Cadastrar</a>
     `;
-    document.getElementById('btnNavLogin')?.addEventListener('click', () => abrirModal('login'));
+    document.getElementById('btnNavLogin')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      abrirModal('login');
+    });
   }
 }
 
-function traduzirErroFirebase(code) {
-  const msgs = {
-    'auth/user-not-found': 'E-mail não cadastrado.',
-    'auth/wrong-password': 'Senha incorreta.',
-    'auth/email-already-in-use': 'Este e-mail já está cadastrado.',
-    'auth/invalid-email': 'E-mail inválido.',
-    'auth/weak-password': `Senha fraca. Use ${SENHA_MIN}–${SENHA_MAX} caracteres, 1 maiúscula e 1 número.`,
-    'auth/too-many-requests': 'Muitas tentativas. Aguarde alguns minutos.',
-    'auth/invalid-credential': 'E-mail ou senha incorretos.',
-  };
-  return msgs[code] || 'Erro inesperado. Tente novamente.';
+function traduzirErroAuth(err) {
+  return err?.message || 'Erro inesperado. Tente novamente.';
 }
 
 async function abrirNoLoadSeNecessario() {
@@ -609,7 +602,7 @@ async function abrirNoLoadSeNecessario() {
 injetarModal();
 setupModal();
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged((user) => {
   atualizarNavbar(user);
 });
 

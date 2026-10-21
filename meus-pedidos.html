@@ -189,25 +189,27 @@
     <p>© 2026 Arte Pharmaceutica. Todos os direitos reservados.</p>
   </footer>
 
+  <script type="module" src="login-modal.js"></script>
   <script type="module">
-    import { getUsuarioAtual } from './auth.js';
-    import { abrirModal }      from './login-modal.js';
+    import { getUsuarioAtual, apiFetch, redirecionarPorRole } from './auth.js';
 
-    const ASAAS_URL = '/.netlify/functions';
-    const content   = document.getElementById('mpContent');
+    const content = document.getElementById('mpContent');
 
     const statusMap = {
-      PENDING:    { label: 'Pendente',   cls: 'mp-badge--pendente' },
-      RECEIVED:   { label: 'Pago',       cls: 'mp-badge--pago' },
-      CONFIRMED:  { label: 'Confirmado', cls: 'mp-badge--confirmed' },
-      OVERDUE:    { label: 'Vencido',    cls: 'mp-badge--cancelado' },
-      REFUNDED:   { label: 'Estornado',  cls: 'mp-badge--cancelado' },
+      PENDENTE:   { label: 'Pendente',    cls: 'mp-badge--pendente' },
+      PAGO:       { label: 'Pago',        cls: 'mp-badge--pago' },
+      CONFIRMADO: { label: 'Confirmado',  cls: 'mp-badge--confirmed' },
+      PREPARANDO: { label: 'Preparando',  cls: 'mp-badge--received' },
+      ENVIADO:    { label: 'Enviado',     cls: 'mp-badge--received' },
+      ENTREGUE:   { label: 'Entregue',    cls: 'mp-badge--pago' },
+      CANCELADO:  { label: 'Cancelado',   cls: 'mp-badge--cancelado' },
     };
 
     const metodoMap = {
+      cartao: 'Cartão de Crédito',
+      pix: 'PIX',
       CREDIT_CARD: 'Cartão de Crédito',
-      PIX:         'PIX',
-      BOLETO:      'Boleto',
+      PIX: 'PIX',
     };
 
     function renderVazio() {
@@ -240,8 +242,7 @@
           <button class="mp-btn" id="btnLoginPedidos">Entrar na minha conta</button>
         </div>`;
       document.getElementById('btnLoginPedidos').addEventListener('click', () => {
-        window.__onAuthSuccess = () => window.location.reload();
-        abrirModal('login');
+        window.location.href = 'login.html';
       });
     }
 
@@ -249,25 +250,24 @@
       if (!pedidos.length) { renderVazio(); return; }
 
       const html = pedidos.map(p => {
-        const data    = new Date(p.dateCreated).toLocaleDateString('pt-BR');
+        const data    = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—';
         const status  = statusMap[p.status] || { label: p.status, cls: 'mp-badge--pendente' };
-        const metodo  = metodoMap[p.billingType] || p.billingType;
-        const valor   = `R$ ${p.value.toFixed(2).replace('.', ',')}`;
-        const descr   = p.description || '—';
+        const metodo  = metodoMap[p.metodo] || p.metodo || '—';
+        const valor   = `R$ ${Number(p.total || 0).toFixed(2).replace('.', ',')}`;
+        const itens   = (p.itens || []).map(i => `${i.nome} (x${i.quantidade})`);
+        const descr   = itens.length ? itens.map(t => `<li class="mp-item"><span class="mp-item-dot"></span>${t}</li>`).join('') : '<li class="mp-item"><span class="mp-item-dot"></span>—</li>';
 
         return `
           <div class="mp-card">
             <div class="mp-card-header">
               <div>
-                <div class="mp-card-num">Pedido #${p.externalReference || p.id.slice(-8).toUpperCase()}</div>
+                <div class="mp-card-num">Pedido #${p.numero || p.id}</div>
                 <div class="mp-card-date">${data}</div>
               </div>
               <span class="mp-badge ${status.cls}">${status.label}</span>
             </div>
             <div class="mp-card-body">
-              <ul class="mp-items">
-                <li class="mp-item"><span class="mp-item-dot"></span>${descr}</li>
-              </ul>
+              <ul class="mp-items">${descr}</ul>
             </div>
             <div class="mp-card-footer">
               <span class="mp-metodo">${metodo}</span>
@@ -282,21 +282,25 @@
       content.innerHTML = `<div class="mp-list">${html}</div>`;
     }
 
-    async function carregarPedidos(email) {
-      const resp = await fetch(`${ASAAS_URL}/buscar-pedidos-email?email=${encodeURIComponent(email)}`);
-      const data = await resp.json();
+    async function carregarPedidos() {
+      const data = await apiFetch('/cliente/pedidos');
       return data.pedidos || [];
     }
 
-    // ── Init ──────────────────────────────────
     const user = await getUsuarioAtual();
 
     if (!user) {
-      renderNaoLogado();
+      window.location.replace('login.html');
+    } else if (user.role === 'admin') {
+      redirecionarPorRole(user);
     } else {
       content.innerHTML = `<div class="mp-state"><div class="mp-state-title" style="color:#8a9ab0">Buscando seus pedidos…</div></div>`;
-      const pedidos = await carregarPedidos(user.email);
-      renderPedidos(pedidos);
+      try {
+        const pedidos = await carregarPedidos();
+        renderPedidos(pedidos);
+      } catch (err) {
+        content.innerHTML = `<div class="mp-state"><div class="mp-state-title">Não foi possível carregar</div><p class="mp-state-text">${err.message}</p></div>`;
+      }
     }
   </script>
 

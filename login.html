@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar | Arte Pharmaceutica</title>
+  <link rel="icon" href="images/brand/logo-arte.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #002B5B;
+      --gold: #C5A059;
+      --gold-light: #d4b06a;
+      --off: #f7f5f2;
+      --text: #1a2332;
+      --soft: #5a6b7d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .box {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 36px 90px rgba(0,20,50,0.3);
+    }
+    .head {
+      background: var(--navy);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .head img { height: 40px; filter: brightness(0) invert(1); }
+    .head a { color: rgba(255,255,255,0.55); font-size: 0.72rem; letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; }
+    .head a:hover { color: #fff; }
+    .body { padding: 1.75rem 1.6rem 1.9rem; }
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.85rem;
+      color: var(--navy);
+      margin-bottom: 0.35rem;
+    }
+    .sub { font-size: 0.85rem; color: var(--soft); margin-bottom: 1.5rem; }
+    label {
+      display: block;
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.35rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem 0.95rem;
+      margin-bottom: 1rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      background: var(--off);
+      border: 1px solid rgba(0,43,91,0.12);
+      border-radius: 10px;
+      outline: none;
+    }
+    input:focus { border-color: var(--gold); background: #fff; }
+    .erro { min-height: 1.1rem; font-size: 0.78rem; color: #c0392b; margin-bottom: 0.5rem; }
+    button {
+      width: 100%;
+      padding: 0.9rem;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    button:hover { background: var(--gold-light); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .hint { margin-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--soft); }
+    .hint a { color: var(--gold); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="head">
+      <img src="images/brand/logo-arte.png" alt="Arte Pharmaceutica">
+      <a href="index.html">Voltar ao site</a>
+    </div>
+    <form class="body" id="formLogin">
+      <h1>Entrar</h1>
+      <p class="sub">Acesse seus pedidos ou o painel administrativo.</p>
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="username" required placeholder="seu@email.com">
+      <label for="senha">Senha</label>
+      <input id="senha" type="password" autocomplete="current-password" required maxlength="20" placeholder="Sua senha">
+      <p class="erro" id="erro"></p>
+      <button type="submit" id="btn">Entrar</button>
+      <p class="hint">Não tem conta? <a href="index.html">Cadastre-se no site</a></p>
+    </form>
+  </div>
+  <script type="module">
+    import { login, getUsuarioAtualSync, redirecionarPorRole } from './auth.js';
+
+    const jaLogado = getUsuarioAtualSync();
+    if (jaLogado) redirecionarPorRole(jaLogado);
+
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const erro = document.getElementById('erro');
+      const btn = document.getElementById('btn');
+      erro.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Entrando…';
+      try {
+        const user = await login(
+          document.getElementById('email').value.trim(),
+          document.getElementById('senha').value
+        );
+        redirecionarPorRole(user);
+      } catch (err) {
+        erro.textContent = err.message || 'E-mail ou senha incorretos.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      }
+    });
+  </script>
+</body>
+</html>

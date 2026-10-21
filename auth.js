@@ -1,64 +1,125 @@
-// ══════════════════════════════════════════════
-//  auth.js — Firebase Auth módulo compartilhado
-//  Arte Pharmaceutica
-// ══════════════════════════════════════════════
+import { API_BASE } from './config.js';
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const TOKEN_KEY = 'arte_auth_token';
+const USER_KEY = 'arte_auth_user';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAbL_EBo9RJjBB07dpP6WdAPy3zOFGn-0Y",
-  authDomain: "arte-pharmaceutica.firebaseapp.com",
-  projectId: "arte-pharmaceutica",
-  storageBucket: "arte-pharmaceutica.firebasestorage.app",
-  messagingSenderId: "797979383872",
-  appId: "1:797979383872:web:43982e446dd5e20af4a7a5",
-};
+const listeners = new Set();
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+function lerUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
-// ── Cadastro ──────────────────────────────────
+function persistir(token, user) {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+  listeners.forEach((fn) => fn(user || null));
+}
+
+function limparSessao() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  listeners.forEach((fn) => fn(null));
+}
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || '';
+}
+
+export async function apiFetch(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (options.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const resp = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let data = {};
+  try {
+    data = await resp.json();
+  } catch {
+    data = {};
+  }
+
+  if (resp.status === 401) {
+    limparSessao();
+  }
+
+  if (!resp.ok) {
+    const err = new Error(data.erro || 'Erro inesperado. Tente novamente.');
+    err.status = resp.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
 export async function cadastrar({ nome, telefone, email, senha }) {
-  const cred = await createUserWithEmailAndPassword(auth, email, senha);
-  await updateProfile(cred.user, { displayName: nome });
-  await setDoc(doc(db, 'usuarios', cred.user.uid), {
-    nome,
-    telefone,
-    email,
-    criadoEm: new Date().toISOString(),
+  const data = await apiFetch('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ nome, telefone, email, senha }),
   });
-  return cred.user;
+  persistir(data.token, data.user);
+  return data.user;
 }
 
-// ── Login ─────────────────────────────────────
 export async function login(email, senha) {
-  const cred = await signInWithEmailAndPassword(auth, email, senha);
-  return cred.user;
-}
-
-// ── Logout ────────────────────────────────────
-export async function logout() {
-  await signOut(auth);
-}
-
-// ── Usuário atual (Promise) ───────────────────
-export function getUsuarioAtual() {
-  return new Promise(resolve => {
-    const unsub = onAuthStateChanged(auth, user => {
-      unsub();
-      resolve(user);
-    });
+  const data = await apiFetch('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, senha }),
   });
+  persistir(data.token, data.user);
+  return data.user;
 }
 
-// ── Dados extras do usuário (Firestore) ──────
-export async function getDadosUsuario(uid) {
-  const snap = await getDoc(doc(db, 'usuarios', uid));
-  return snap.exists() ? snap.data() : null;
+export async function logout() {
+  limparSessao();
 }
 
-// ── Observer de estado ────────────────────────
-export { onAuthStateChanged, auth };
+export function getUsuarioAtual() {
+  return Promise.resolve(lerUser());
+}
+
+export function getUsuarioAtualSync() {
+  return lerUser();
+}
+
+export function onAuthStateChanged(_authOrCb, maybeCb) {
+  const fn = typeof _authOrCb === 'function' ? _authOrCb : maybeCb;
+  if (typeof fn !== 'function') return () => {};
+  listeners.add(fn);
+  fn(lerUser());
+  return () => listeners.delete(fn);
+}
+
+export function redirecionarPorRole(user) {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  if (user.role === 'admin') {
+    window.location.href = 'admin.html';
+    return;
+  }
+  window.location.href = 'meus-pedidos.html';
+}
+
+export function exigirRole(role) {
+  const user = lerUser();
+  if (!user || !getToken()) {
+    window.location.replace('login.html');
+    return null;
+  }
+  if (role && user.role !== role) {
+    redirecionarPorRole(user);
+    return null;
+  }
+  return user;
+}
+
+export const auth = { currentUser: lerUser() };

@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /login.html
 Disallow: /meus-pedidos.html
 Disallow: /.netlify/
 

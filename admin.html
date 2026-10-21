@@ -1,33 +1,42 @@
- <!-- ══ TELA DE LOGIN ══ -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Pedidos | Arte Pharmaceutica</title>
+  <link rel="icon" href="images/brand/logo-arte.png">
   <link rel="stylesheet" href="admin.css">
-  <div id="loginScreen">
-    <div class="login-box">
-      <div class="login-logo">Arte Pharmaceutica</div>
-      <div class="login-sub">Painel Administrativo</div>
-
-      <label class="login-label" for="inputSenha">Senha de acesso</label>
-      <input class="login-input" type="password" id="inputSenha" placeholder="••••••••"
-        autocomplete="current-password">
-
-      <button class="login-btn" id="btnLogin">Entrar</button>
-      <p class="login-error" id="loginError"></p>
-    </div>
-  </div>
-
-  <!-- ══ PAINEL ADMIN ══ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    #adminPanel { display: block; }
+    .adm-status-select {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid rgba(0,43,91,0.18);
+      border-radius: 6px;
+      background: #fff;
+      color: #002B5B;
+      cursor: pointer;
+    }
+    tbody td { white-space: normal; }
+  </style>
+</head>
+<body>
   <div id="adminPanel">
-
     <header class="adm-header">
       <div>
         <div class="adm-header-title">Painel de Pedidos</div>
         <div class="adm-header-sub">Arte Pharmaceutica — Administrativo</div>
       </div>
-      <button class="adm-logout" id="btnLogout">Sair</button>
+      <button class="adm-logout" id="btnLogout" type="button">Sair</button>
     </header>
 
     <main class="adm-main">
-
-      <!-- Cards resumo -->
       <div class="adm-stats">
         <div class="adm-stat-card">
           <div class="adm-stat-label">Total de pedidos</div>
@@ -47,47 +56,164 @@
         </div>
       </div>
 
-      <!-- Filtros -->
       <div class="adm-filters">
-        <button class="adm-filter-btn active" data-filter="TODOS">Todos</button>
-        <button class="adm-filter-btn" data-filter="RECEIVED">Pagos</button>
-        <button class="adm-filter-btn" data-filter="CONFIRMED">Confirmados</button>
-        <button class="adm-filter-btn" data-filter="PENDING">Pendentes</button>
-        <button class="adm-filter-btn" data-filter="OVERDUE">Vencidos</button>
-        <button class="adm-refresh" id="btnRefresh">↻ Atualizar</button>
+        <button class="adm-filter-btn active" data-filter="TODOS" type="button">Todos</button>
+        <button class="adm-filter-btn" data-filter="PAGO" type="button">Pagos</button>
+        <button class="adm-filter-btn" data-filter="CONFIRMADO" type="button">Confirmados</button>
+        <button class="adm-filter-btn" data-filter="PENDENTE" type="button">Pendentes</button>
+        <button class="adm-filter-btn" data-filter="CANCELADO" type="button">Cancelados</button>
+        <button class="adm-refresh" id="btnRefresh" type="button">↻ Atualizar</button>
       </div>
 
-      <!-- Tabela -->
       <div class="adm-table-wrap">
-  <div class="adm-loading" id="loadingMsg">Carregando pedidos…</div>
-  <table id="tabelaPedidos" style="display:none">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Cliente</th>
-        <th>CPF</th>
-        <th>Telefone</th>
-        <th>Endereço de entrega</th>
-        <th>Produto(s)</th>
-        <th>Método</th>
-        <th>Parcelas</th>
-        <th>Valor</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="tabelaBody"></tbody>
-  </table>
-  <div class="adm-empty" id="emptyMsg" style="display:none">
-    Nenhum pedido encontrado.
-  </div>
-</div>
-
+        <div class="adm-loading" id="loadingMsg">Carregando pedidos…</div>
+        <table id="tabelaPedidos" style="display:none">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Nº</th>
+              <th>Cliente</th>
+              <th>Contato</th>
+              <th>Entrega</th>
+              <th>Produto(s)</th>
+              <th>Método</th>
+              <th>Valor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaBody"></tbody>
+        </table>
+        <div class="adm-empty" id="emptyMsg" style="display:none">Nenhum pedido encontrado.</div>
+      </div>
     </main>
 
-    <footer class="adm-footer">
-      © 2026 Arte Pharmaceutica — Acesso restrito
-    </footer>
-
+    <footer class="adm-footer">© 2026 Arte Pharmaceutica — Acesso restrito</footer>
   </div>
 
-<script src="pedido.js"></script>
+  <script type="module">
+    import { exigirRole, logout, apiFetch } from './auth.js';
+
+    const user = exigirRole('admin');
+    if (!user) throw new Error('redirect');
+
+    const STATUS = ['PENDENTE', 'PAGO', 'CONFIRMADO', 'PREPARANDO', 'ENVIADO', 'ENTREGUE', 'CANCELADO'];
+    const pagosSet = new Set(['PAGO', 'CONFIRMADO', 'RECEIVED', 'CONFIRMED']);
+
+    let todosPedidos = [];
+    let filtroAtual = 'TODOS';
+
+    function fmtMoney(n) {
+      return `R$ ${Number(n || 0).toFixed(2).replace('.', ',')}`;
+    }
+
+    function badgeCss(status) {
+      if (pagosSet.has(status)) return 'badge-pago';
+      if (status === 'PENDENTE' || status === 'PENDING' || status === 'PREPARANDO' || status === 'ENVIADO') return 'badge-pendente';
+      return 'badge-cancelado';
+    }
+
+    function atualizarStats() {
+      const pagos = todosPedidos.filter((p) => pagosSet.has(p.status));
+      const pendentes = todosPedidos.filter((p) => p.status === 'PENDENTE' || p.status === 'PENDING');
+      const receita = pagos.reduce((s, p) => s + Number(p.total || 0), 0);
+      document.getElementById('statTotal').textContent = todosPedidos.length;
+      document.getElementById('statPagos').textContent = pagos.length;
+      document.getElementById('statPendentes').textContent = pendentes.length;
+      document.getElementById('statReceita').textContent = receita.toFixed(2).replace('.', ',');
+    }
+
+    function renderizarTabela() {
+      const lista = filtroAtual === 'TODOS'
+        ? todosPedidos
+        : todosPedidos.filter((p) => p.status === filtroAtual);
+
+      const tbody = document.getElementById('tabelaBody');
+      const tabela = document.getElementById('tabelaPedidos');
+      const empty = document.getElementById('emptyMsg');
+
+      if (!lista.length) {
+        tabela.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      tabela.style.display = 'table';
+      empty.style.display = 'none';
+
+      tbody.innerHTML = lista.map((p) => {
+        const data = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—';
+        const itens = (p.itens || []).map((i) => `${i.nome} (x${i.quantidade})`).join(', ') || '—';
+        const opts = STATUS.map((s) => `<option value="${s}" ${p.status === s ? 'selected' : ''}>${s}</option>`).join('');
+        return `
+          <tr>
+            <td>${data}</td>
+            <td>${p.numero || p.id}</td>
+            <td style="font-weight:600">${p.cliente?.nome || '—'}<br><span style="font-weight:400;color:#5a6b7d">${p.cliente?.email || ''}</span></td>
+            <td>${p.cliente?.telefone || '—'}<br>${p.cliente?.cpf || ''}</td>
+            <td style="min-width:220px;line-height:1.45">${p.endereco_entrega || '—'}</td>
+            <td style="min-width:180px;line-height:1.45">${itens}</td>
+            <td>${p.metodo || '—'}</td>
+            <td style="font-weight:600">${fmtMoney(p.total)}</td>
+            <td>
+              <select class="adm-status-select" data-id="${p.id}" aria-label="Status do pedido ${p.numero || p.id}">
+                ${opts}
+              </select>
+              <span class="badge ${badgeCss(p.status)}" style="margin-left:0.4rem">${p.status}</span>
+            </td>
+          </tr>`;
+      }).join('');
+
+      tbody.querySelectorAll('.adm-status-select').forEach((sel) => {
+        sel.addEventListener('change', async () => {
+          const id = sel.dataset.id;
+          const status = sel.value;
+          sel.disabled = true;
+          try {
+            await apiFetch(`/admin/pedidos/${id}/status`, {
+              method: 'PATCH',
+              body: JSON.stringify({ status }),
+            });
+            await carregarPedidos();
+          } catch (err) {
+            alert(err.message || 'Não foi possível atualizar o status.');
+            await carregarPedidos();
+          }
+        });
+      });
+    }
+
+    async function carregarPedidos() {
+      document.getElementById('loadingMsg').style.display = 'block';
+      document.getElementById('tabelaPedidos').style.display = 'none';
+      document.getElementById('emptyMsg').style.display = 'none';
+      try {
+        const data = await apiFetch('/admin/pedidos');
+        todosPedidos = data.pedidos || [];
+        renderizarTabela();
+        atualizarStats();
+      } catch (err) {
+        document.getElementById('emptyMsg').textContent = err.message || 'Erro ao carregar pedidos.';
+        document.getElementById('emptyMsg').style.display = 'block';
+      } finally {
+        document.getElementById('loadingMsg').style.display = 'none';
+      }
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', carregarPedidos);
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await logout();
+      window.location.replace('login.html');
+    });
+    document.querySelectorAll('.adm-filter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.adm-filter-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroAtual = btn.dataset.filter;
+        renderizarTabela();
+      });
+    });
+
+    carregarPedidos();
+  </script>
+</body>
+</html>
