@@ -92,7 +92,35 @@
     button:hover { background: var(--gold-light); }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
     .hint { margin-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--soft); }
-    .hint a { color: var(--gold); text-decoration: none; font-weight: 600; }
+    .hint button {
+      width: auto;
+      padding: 0;
+      background: none;
+      color: var(--gold);
+      letter-spacing: 0;
+      text-transform: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .hint button:hover { background: none; }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(0,43,91,0.1);
+    }
+    .tabs button {
+      flex: 1;
+      padding: 0.9rem;
+      background: #fff;
+      color: #8a9ab0;
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+    }
+    .tabs button.is-active {
+      color: var(--navy);
+      border-bottom-color: var(--gold);
+      background: #fff;
+    }
+    .reqs { margin: -0.25rem 0 1rem; padding-left: 1.1rem; color: var(--soft); font-size: 0.75rem; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -100,6 +128,10 @@
     <div class="head">
       <img src="images/brand/logo-arte.png" alt="Arte Pharmaceutica">
       <a href="index.html">Voltar ao site</a>
+    </div>
+    <div class="tabs">
+      <button type="button" id="tabEntrar" class="is-active">Entrar</button>
+      <button type="button" id="tabCriar">Criar conta</button>
     </div>
     <form class="body" id="formLogin">
       <h1>Entrar</h1>
@@ -110,16 +142,51 @@
       <input id="senha" type="password" autocomplete="current-password" required maxlength="20" placeholder="Sua senha">
       <p class="erro" id="erro"></p>
       <button type="submit" id="btn">Entrar</button>
-      <p class="hint">Não tem conta? <a href="index.html">Cadastre-se no site</a></p>
+    </form>
+    <form class="body" id="formCadastro" hidden>
+      <h1>Criar conta</h1>
+      <p class="sub">Cadastro de cliente. O painel admin é só para a farmácia.</p>
+      <label for="nome">Nome completo</label>
+      <input id="nome" type="text" autocomplete="name" required placeholder="Seu nome completo">
+      <label for="telefone">Telefone / WhatsApp</label>
+      <input id="telefone" type="tel" autocomplete="tel" placeholder="(41) 99999-9999">
+      <label for="cadEmail">E-mail</label>
+      <input id="cadEmail" type="email" autocomplete="email" required placeholder="seu@email.com">
+      <label for="cadSenha">Senha</label>
+      <input id="cadSenha" type="password" autocomplete="new-password" required maxlength="20" placeholder="Crie sua senha">
+      <ul class="reqs">
+        <li>Entre 6 e 20 caracteres</li>
+        <li>Pelo menos 1 letra maiúscula</li>
+        <li>Pelo menos 1 número</li>
+      </ul>
+      <label for="cadConfirmar">Confirmar senha</label>
+      <input id="cadConfirmar" type="password" autocomplete="new-password" required maxlength="20" placeholder="Repita a senha">
+      <p class="erro" id="cadErro"></p>
+      <button type="submit" id="btnCad">Criar conta</button>
     </form>
   </div>
   <script type="module">
-    import { login, getUsuarioAtualSync, redirecionarPorRole } from './auth.js';
+    import { login, cadastrar, getUsuarioAtualSync, redirecionarPorRole } from './auth.js';
 
     const jaLogado = getUsuarioAtualSync();
     if (jaLogado) redirecionarPorRole(jaLogado);
 
-    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    const formLogin = document.getElementById('formLogin');
+    const formCadastro = document.getElementById('formCadastro');
+    document.getElementById('tabEntrar').addEventListener('click', () => {
+      document.getElementById('tabEntrar').classList.add('is-active');
+      document.getElementById('tabCriar').classList.remove('is-active');
+      formLogin.hidden = false;
+      formCadastro.hidden = true;
+    });
+    document.getElementById('tabCriar').addEventListener('click', () => {
+      document.getElementById('tabCriar').classList.add('is-active');
+      document.getElementById('tabEntrar').classList.remove('is-active');
+      formCadastro.hidden = false;
+      formLogin.hidden = true;
+    });
+
+    formLogin.addEventListener('submit', async (e) => {
       e.preventDefault();
       const erro = document.getElementById('erro');
       const btn = document.getElementById('btn');
@@ -137,6 +204,35 @@
       } finally {
         btn.disabled = false;
         btn.textContent = 'Entrar';
+      }
+    });
+
+    formCadastro.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const erro = document.getElementById('cadErro');
+      const btn = document.getElementById('btnCad');
+      const senha = document.getElementById('cadSenha').value;
+      const confirmar = document.getElementById('cadConfirmar').value;
+      erro.textContent = '';
+      if (senha !== confirmar) {
+        erro.textContent = 'As senhas não coincidem.';
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Criando conta…';
+      try {
+        const user = await cadastrar({
+          nome: document.getElementById('nome').value.trim(),
+          telefone: document.getElementById('telefone').value.trim(),
+          email: document.getElementById('cadEmail').value.trim(),
+          senha,
+        });
+        redirecionarPorRole(user);
+      } catch (err) {
+        erro.textContent = err.message || 'Não foi possível criar a conta.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Criar conta';
       }
     });
   </script>

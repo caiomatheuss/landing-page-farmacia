@@ -568,12 +568,8 @@ function atualizarNavbar(user) {
     });
   } else {
     area.innerHTML = `
-      <a href="login.html" class="nav-btn-login" id="btnNavLogin" style="text-decoration:none">Entrar / Cadastrar</a>
+      <a href="login.html" class="nav-btn-login" style="text-decoration:none">Entrar / Cadastrar</a>
     `;
-    document.getElementById('btnNavLogin')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      abrirModal('login');
-    });
   }
 }
 
@@ -605,7 +601,5 @@ setupModal();
 onAuthStateChanged((user) => {
   atualizarNavbar(user);
 });
-
-abrirNoLoadSeNecessario();
 
 export { getUsuarioAtual };

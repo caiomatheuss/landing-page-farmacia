@@ -178,3 +178,97 @@ if (carouselTrack && carouselDots) {
 
   startAutoplay();
 }
+
+function initPhotoCarousels() {
+  document.querySelectorAll('[data-carousel]').forEach((root) => {
+    const track = root.querySelector('.espaco-track');
+    const slides = root.querySelectorAll('.espaco-slide');
+    const dotsWrap = root.querySelector('[data-carousel-dots]');
+    const prev = root.querySelector('[data-carousel-prev]');
+    const next = root.querySelector('[data-carousel-next]');
+    const interval = Number(root.dataset.autoplay || 0);
+    if (!track || !slides.length || !dotsWrap) return;
+
+    let current = 0;
+    let timer;
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'espaco-dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('aria-label', `Foto ${i + 1}`);
+      dot.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(dot);
+    });
+
+    const dots = dotsWrap.querySelectorAll('.espaco-dot');
+
+    function goTo(index) {
+      current = (index + slides.length) % slides.length;
+      track.style.transform = `translateX(-${(current * 100) / slides.length}%)`;
+      dots.forEach((dot, i) => dot.classList.toggle('is-active', i === current));
+    }
+
+    function start() {
+      if (!interval) return;
+      stop();
+      timer = setInterval(() => goTo(current + 1), interval);
+    }
+
+    function stop() {
+      clearInterval(timer);
+    }
+
+    prev?.addEventListener('click', () => {
+      goTo(current - 1);
+      start();
+    });
+    next?.addEventListener('click', () => {
+      goTo(current + 1);
+      start();
+    });
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    start();
+  });
+}
+
+function initLightbox() {
+  const box = document.getElementById('lightbox');
+  const img = document.getElementById('lightboxImg');
+  const caption = document.getElementById('lightboxCaption');
+  const closeBtn = document.getElementById('lightboxClose');
+  if (!box || !img) return;
+
+  function open(src, text, alt) {
+    img.src = src;
+    img.alt = alt || text || '';
+    caption.textContent = text || '';
+    box.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    box.hidden = true;
+    img.src = '';
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-lightbox]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const photo = btn.querySelector('img');
+      open(btn.dataset.lightbox, btn.dataset.caption, photo?.alt);
+    });
+  });
+
+  closeBtn?.addEventListener('click', close);
+  box.addEventListener('click', (e) => {
+    if (e.target === box) close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !box.hidden) close();
+  });
+}
+
+initPhotoCarousels();
+initLightbox();
