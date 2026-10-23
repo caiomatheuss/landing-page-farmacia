@@ -56,6 +56,72 @@ const PRODUCTS = [
     usage:
       'Posologia definida pelo profissional de saúde. Em geral, 1 cápsula ao dia. Mantenha em local fresco e seco.',
   },
+  {
+    id: 'exemplo-vitamina-d',
+    name: 'Vitamina D3 2.000 UI',
+    price: 0,
+    image: 'images/products/placeholder.svg',
+    placeholder: true,
+    purpose: 'Card de exemplo para visualizar a galeria com mais produtos. Substitua pelo produto real quando for cadastrar.',
+    description: 'Este item ainda não está à venda. Serve só para mostrar como a vitrine fica com uma lista maior.',
+    composition: 'Exemplo de composição — preencha com a fórmula real.',
+    usage: 'Exemplo de modo de uso — preencha com a orientação real.',
+  },
+  {
+    id: 'exemplo-omega-3',
+    name: 'Ômega 3',
+    price: 0,
+    image: 'images/products/placeholder.svg',
+    placeholder: true,
+    purpose: 'Card de exemplo para visualizar a galeria com mais produtos. Substitua pelo produto real quando for cadastrar.',
+    description: 'Este item ainda não está à venda. Serve só para mostrar como a vitrine fica com uma lista maior.',
+    composition: 'Exemplo de composição — preencha com a fórmula real.',
+    usage: 'Exemplo de modo de uso — preencha com a orientação real.',
+  },
+  {
+    id: 'exemplo-magnesio',
+    name: 'Magnésio Dimalato',
+    price: 0,
+    image: 'images/products/placeholder.svg',
+    placeholder: true,
+    purpose: 'Card de exemplo para visualizar a galeria com mais produtos. Substitua pelo produto real quando for cadastrar.',
+    description: 'Este item ainda não está à venda. Serve só para mostrar como a vitrine fica com uma lista maior.',
+    composition: 'Exemplo de composição — preencha com a fórmula real.',
+    usage: 'Exemplo de modo de uso — preencha com a orientação real.',
+  },
+  {
+    id: 'exemplo-colageno',
+    name: 'Colágeno Hidrolisado',
+    price: 0,
+    image: 'images/products/placeholder.svg',
+    placeholder: true,
+    purpose: 'Card de exemplo para visualizar a galeria com mais produtos. Substitua pelo produto real quando for cadastrar.',
+    description: 'Este item ainda não está à venda. Serve só para mostrar como a vitrine fica com uma lista maior.',
+    composition: 'Exemplo de composição — preencha com a fórmula real.',
+    usage: 'Exemplo de modo de uso — preencha com a orientação real.',
+  },
+  {
+    id: 'exemplo-melatonina',
+    name: 'Melatonina 3mg',
+    price: 0,
+    image: 'images/products/placeholder.svg',
+    placeholder: true,
+    purpose: 'Card de exemplo para visualizar a galeria com mais produtos. Substitua pelo produto real quando for cadastrar.',
+    description: 'Este item ainda não está à venda. Serve só para mostrar como a vitrine fica com uma lista maior.',
+    composition: 'Exemplo de composição — preencha com a fórmula real.',
+    usage: 'Exemplo de modo de uso — preencha com a orientação real.',
+  },
+  {
+    id: 'exemplo-complexo-b',
+    name: 'Complexo B',
+    price: 0,
+    image: 'images/products/placeholder.svg',
+    placeholder: true,
+    purpose: 'Card de exemplo para visualizar a galeria com mais produtos. Substitua pelo produto real quando for cadastrar.',
+    description: 'Este item ainda não está à venda. Serve só para mostrar como a vitrine fica com uma lista maior.',
+    composition: 'Exemplo de composição — preencha com a fórmula real.',
+    usage: 'Exemplo de modo de uso — preencha com a orientação real.',
+  },
 ];
 
 const CART_KEY = 'arte-pharma-cart';
@@ -68,7 +134,7 @@ function loadCart() {
   try {
     const raw = JSON.parse(localStorage.getItem(CART_KEY)) || [];
     // Filtra itens cujo id não existe mais nos produtos cadastrados
-    const validIds = PRODUCTS.map(p => p.id);
+    const validIds = PRODUCTS.filter((p) => !p.placeholder).map((p) => p.id);
     const clean = raw.filter(item => validIds.includes(item.id));
     // Se havia lixo, já limpa o localStorage
     if (clean.length !== raw.length) {
@@ -96,6 +162,8 @@ function getCartTotal(cart) {
 }
 
 function addToCart(productId) {
+  const product = PRODUCTS.find((x) => x.id === productId);
+  if (!product || product.placeholder) return loadCart();
   const cart = loadCart();
   const existing = cart.find((i) => i.id === productId);
   if (existing) existing.qty += 1;
@@ -116,27 +184,42 @@ function buildCartWhatsAppMessage(cart) {
   return lines.join('\n');
 }
 
-function initStore() {
-  const grid = document.getElementById('showroomGrid');
-  if (!grid) return;
+function productCardHtml(p) {
+  const badge = p.placeholder
+    ? '<span class="product-badge product-badge--example">Exemplo</span>'
+    : p.exclusive
+      ? '<span class="product-badge">Fórmula Exclusiva</span>'
+      : '';
+  const price = p.placeholder
+    ? '<p class="product-price">Exemplo de vitrine</p>'
+    : `<p class="product-price">${formatPrice(p.price)}</p>`;
+  const action = p.placeholder
+    ? `<button type="button" class="btn-add-cart" data-open-product="${p.id}">Ver detalhes</button>`
+    : `<button type="button" class="btn-add-cart" data-add-cart="${p.id}">
+          <span class="btn-add-label">Adicionar ao Carrinho</span>
+          <span class="btn-add-done" aria-hidden="true">✓ Adicionado</span>
+        </button>`;
 
-  grid.innerHTML = PRODUCTS.map(
-    (p) => `
-    <article class="product-card reveal" data-product-id="${p.id}">
+  return `
+    <article class="product-card reveal${p.placeholder ? ' is-placeholder' : ''}" data-product-id="${p.id}">
       <button type="button" class="product-visual" data-open-product="${p.id}" aria-label="Ver detalhes de ${p.name}">
-        ${p.exclusive ? '<span class="product-badge">Fórmula Exclusiva</span>' : ''}
+        ${badge}
         <img src="${p.image}" alt="${p.name}" loading="lazy">
       </button>
       <div class="product-info">
         <button type="button" class="product-name" data-open-product="${p.id}">${p.name}</button>
-        <p class="product-price">${formatPrice(p.price)}</p>
-        <button type="button" class="btn-add-cart" data-add-cart="${p.id}">
-          <span class="btn-add-label">Adicionar ao Carrinho</span>
-          <span class="btn-add-done" aria-hidden="true">✓ Adicionado</span>
-        </button>
+        ${price}
+        ${action}
       </div>
-    </article>`
-  ).join('');
+    </article>`;
+}
+
+function initStore() {
+  const grid = document.getElementById('showroomGrid');
+  if (!grid) return;
+
+  const catalog = grid.dataset.catalog === 'all' ? PRODUCTS : PRODUCTS.filter((p) => !p.placeholder);
+  grid.innerHTML = catalog.map(productCardHtml).join('');
 
   document.querySelectorAll('[data-add-cart]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
@@ -163,6 +246,8 @@ function initStore() {
       el.classList.add('visible');
     }
   });
+
+  initInquiry();
 }
 
 if (document.readyState === 'loading') {
@@ -197,19 +282,35 @@ function openProductModal(productId) {
   modal.querySelector('[data-modal-img]').src = p.image;
   modal.querySelector('[data-modal-img]').alt = p.name;
   modal.querySelector('[data-modal-title]').textContent = p.name;
-  modal.querySelector('[data-modal-price]').textContent = formatPrice(p.price);
+  modal.querySelector('[data-modal-price]').textContent = p.placeholder ? 'Exemplo de vitrine' : formatPrice(p.price);
   modal.querySelector('[data-modal-purpose]').textContent = p.purpose;
   modal.querySelector('[data-modal-description]').textContent = p.description;
   modal.querySelector('[data-modal-composition]').textContent = p.composition;
   modal.querySelector('[data-modal-usage]').textContent = p.usage;
 
+  const badge = modal.querySelector('[data-modal-badge]');
+  if (badge) {
+    badge.hidden = !(p.exclusive || p.placeholder);
+    badge.textContent = p.placeholder ? 'Exemplo' : 'Fórmula Exclusiva';
+    badge.classList.toggle('product-badge--example', Boolean(p.placeholder));
+  }
+
   const addBtn = modal.querySelector('[data-modal-add]');
+  const checkoutLink = modal.querySelector('.modal-checkout-link');
+  addBtn.hidden = Boolean(p.placeholder);
+  if (checkoutLink) checkoutLink.hidden = Boolean(p.placeholder);
   addBtn.dataset.addCart = p.id;
   addBtn.onclick = () => {
+    if (p.placeholder) return;
     addToCart(p.id);
     addBtn.classList.add('is-added');
     setTimeout(() => addBtn.classList.remove('is-added'), 1800);
   };
+
+  const doubtBtn = modal.querySelector('[data-modal-doubt]');
+  if (doubtBtn) {
+    doubtBtn.onclick = () => openInquiry({ mode: 'produto', product: p });
+  }
 
   modal.classList.add('is-open');
   modal.setAttribute('aria-hidden', 'false');
@@ -239,6 +340,121 @@ function initProductModal() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeProductModal();
+    if (e.key !== 'Escape') return;
+    const inquiry = document.getElementById('inquiryModal');
+    if (inquiry && !inquiry.hidden) return;
+    closeProductModal();
+  });
+}
+
+let inquiryState = { mode: 'manipular', product: null };
+
+function ensureInquiryModal() {
+  if (document.getElementById('inquiryModal')) return;
+
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="inquiry-modal" id="inquiryModal" hidden>
+      <div class="modal-backdrop" data-inquiry-close></div>
+      <form class="inquiry-panel" id="inquiryForm">
+        <button type="button" class="modal-close" data-inquiry-close aria-label="Fechar">×</button>
+        <p class="eyebrow" data-inquiry-kicker>WhatsApp</p>
+        <h2 class="inquiry-title" data-inquiry-title>Dúvidas sobre o produto</h2>
+        <p class="inquiry-lead" data-inquiry-lead></p>
+        <label class="inquiry-field">
+          <span>Seu nome</span>
+          <input type="text" name="nome" autocomplete="name" maxlength="80" required placeholder="Como podemos te chamar?">
+        </label>
+        <label class="inquiry-field">
+          <span data-inquiry-notes-label>Informações breves</span>
+          <textarea name="notas" maxlength="500" rows="4" required placeholder="Escreva aqui, em poucas linhas."></textarea>
+        </label>
+        <p class="inquiry-error" data-inquiry-error hidden>Preencha seu nome e uma breve informação para continuar.</p>
+        <button type="submit" class="btn-showroom btn-showroom--gold">Enviar no WhatsApp</button>
+      </form>
+    </div>`;
+  document.body.appendChild(wrap.firstElementChild);
+}
+
+function openInquiry({ mode, product }) {
+  ensureInquiryModal();
+  const modal = document.getElementById('inquiryModal');
+  const form = document.getElementById('inquiryForm');
+  inquiryState = { mode, product: product || null };
+  form.reset();
+  modal.querySelector('[data-inquiry-error]').hidden = true;
+
+  const title = modal.querySelector('[data-inquiry-title]');
+  const lead = modal.querySelector('[data-inquiry-lead]');
+  const notesLabel = modal.querySelector('[data-inquiry-notes-label]');
+  const notes = form.elements.notas;
+
+  if (mode === 'produto' && product) {
+    title.textContent = 'Dúvidas sobre o produto';
+    lead.textContent = `Vamos abrir o WhatsApp da Arte Pharmaceutica já com o seu nome e a sua dúvida sobre ${product.name}.`;
+    notesLabel.textContent = 'Quais são as suas dúvidas?';
+    notes.placeholder = 'Conte em poucas linhas o que você quer saber.';
+  } else {
+    title.textContent = 'Quero manipular o meu próprio remédio';
+    lead.textContent = 'Vamos abrir o WhatsApp da Arte Pharmaceutica já com o seu nome e o que você precisa. Assim o atendimento já começa te chamando pelo nome.';
+    notesLabel.textContent = 'Informações breves';
+    notes.placeholder = 'Ex.: quero um remédio para dormir melhor, com orientação do farmacêutico.';
+  }
+
+  modal.hidden = false;
+  document.body.classList.add('modal-open');
+  form.elements.nome.focus();
+}
+
+function closeInquiry() {
+  const modal = document.getElementById('inquiryModal');
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  const productModal = document.getElementById('productModal');
+  if (!productModal || !productModal.classList.contains('is-open')) {
+    document.body.classList.remove('modal-open');
+  }
+}
+
+function buildInquiryMessage(nome, notas) {
+  if (inquiryState.mode === 'produto' && inquiryState.product) {
+    return `Oi, meu nome é ${nome}. Minhas dúvidas sobre o remédio ${inquiryState.product.name} são estas: ${notas}`;
+  }
+  return `Olá, meu nome é ${nome}. Quero manipular o meu próprio remédio. As informações são estas: ${notas}`;
+}
+
+function initInquiry() {
+  ensureInquiryModal();
+  const modal = document.getElementById('inquiryModal');
+  const form = document.getElementById('inquiryForm');
+
+  document.querySelectorAll('[data-inquiry="manipular"]').forEach((btn) => {
+    btn.addEventListener('click', () => openInquiry({ mode: 'manipular' }));
+  });
+
+  modal.querySelectorAll('[data-inquiry-close]').forEach((el) => {
+    el.addEventListener('click', closeInquiry);
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nome = form.elements.nome.value.trim();
+    const notas = form.elements.notas.value.trim();
+    const error = modal.querySelector('[data-inquiry-error]');
+    if (!nome || !notas) {
+      error.hidden = false;
+      return;
+    }
+    error.hidden = true;
+    const phone = typeof SITE !== 'undefined' ? SITE.matriz.phone : '5541991694197';
+    const url = typeof waLink === 'function'
+      ? waLink(phone, buildInquiryMessage(nome, notas))
+      : `https://wa.me/${phone}?text=${encodeURIComponent(buildInquiryMessage(nome, notas))}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    closeInquiry();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeInquiry();
   });
 }

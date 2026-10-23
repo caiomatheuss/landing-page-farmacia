@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 560" role="img" aria-label="Exemplo de produto">
+  <rect width="480" height="560" fill="#F7F4EE"/>
+  <rect x="24" y="24" width="432" height="512" fill="none" stroke="#C5A059" stroke-width="1.5"/>
+  <rect x="40" y="40" width="400" height="480" fill="none" stroke="#002B5B" stroke-width="0.6" opacity="0.35"/>
+  <g fill="none" stroke="#002B5B" stroke-width="3" stroke-linecap="round">
+    <path d="M190 250c0-28 22-50 50-50s50 22 50 50v70c0 28-22 50-50 50s-50-22-50-50z"/>
+    <path d="M190 285h100" stroke="#C5A059" stroke-width="3"/>
+  </g>
+  <text x="240" y="420" text-anchor="middle" fill="#002B5B" font-family="Georgia, serif" font-size="22" letter-spacing="3">EXEMPLO</text>
+</svg>

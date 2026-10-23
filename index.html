@@ -362,6 +362,10 @@
   </div>
   <div class="wrap">
     <div class="showroom-grid" id="showroomGrid"></div>
+    <div class="showroom-actions">
+      <a href="produtos.html" class="btn-showroom btn-showroom--gold">Ver galeria de produtos</a>
+      <button type="button" class="btn-showroom btn-showroom--navy" data-inquiry="manipular">Quero manipular o meu próprio remédio</button>
+    </div>
   </div>
 </section>
 
@@ -547,7 +551,7 @@
     <button type="button" class="modal-close" data-modal-close aria-label="Fechar">×</button>
     <div class="modal-grid">
       <div class="modal-visual">
-        <span class="product-badge">Fórmula Exclusiva</span>
+        <span class="product-badge" data-modal-badge>Fórmula Exclusiva</span>
         <img src="" alt="" data-modal-img>
       </div>
       <div class="modal-body">
@@ -561,11 +565,14 @@
         <p class="modal-text modal-text--sans" data-modal-composition></p>
         <h3 class="modal-label">Modo de uso</h3>
         <p class="modal-text modal-text--sans" data-modal-usage></p>
-        <button type="button" class="btn btn-gold modal-buy" data-modal-add>
-          <span class="btn-add-label">Adicionar ao Carrinho</span>
-          <span class="btn-add-done" aria-hidden="true">✓ Adicionado</span>
-        </button>
-        <a href="checkout.html" class="link-gold modal-checkout-link" data-cart-open>Ir para o carrinho</a>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-gold modal-buy" data-modal-add>
+            <span class="btn-add-label">Adicionar ao Carrinho</span>
+            <span class="btn-add-done" aria-hidden="true">✓ Adicionado</span>
+          </button>
+          <button type="button" class="btn-showroom btn-showroom--navy" data-modal-doubt>Dúvidas sobre o produto</button>
+          <a href="checkout.html" class="link-gold modal-checkout-link" data-cart-open>Ir para o carrinho</a>
+        </div>
       </div>
     </div>
   </div>

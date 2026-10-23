@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Galeria de produtos da Arte Pharmaceutica, farmácia de manipulação em São José dos Pinhais.">
+  <title>Galeria de produtos | Arte Pharmaceutica</title>
+  <link rel="icon" type="image/png" href="images/brand/logo-arte.png">
+  <script type="module" src="login-modal.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+</head>
+<body class="catalog-page">
+
+<header class="nav" id="navbar">
+  <a href="index.html" class="nav-logo" aria-label="Arte Pharmaceutica">
+    <img src="images/brand/logo-arte.png" alt="Arte Pharmaceutica" class="nav-logo-img" width="120" height="50">
+  </a>
+  <ul class="nav-links">
+    <div id="navUserArea"></div>
+    <li><a href="index.html">Início</a></li>
+    <li><a href="index.html#historia">História</a></li>
+    <li><a href="index.html#servicos">Especialidades</a></li>
+    <li><a href="produtos.html" aria-current="page">Produtos</a></li>
+    <li><a href="index.html#contato">Contato</a></li>
+    <li><a href="#" data-wa="matriz" class="nav-cta">WhatsApp</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Abrir menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="index.html" onclick="closeMenu()">Início</a>
+  <a href="index.html#historia" onclick="closeMenu()">História</a>
+  <a href="index.html#servicos" onclick="closeMenu()">Especialidades</a>
+  <a href="produtos.html" onclick="closeMenu()">Produtos</a>
+  <a href="index.html#contato" onclick="closeMenu()">Contato</a>
+  <a href="#" data-wa="matriz" class="nav-cta" onclick="closeMenu()">WhatsApp</a>
+</div>
+
+<main class="catalog-main">
+  <div class="wrap showroom-head">
+    <div>
+      <p class="eyebrow">Showroom</p>
+      <h1 class="title">Galeria de produtos</h1>
+      <p class="showroom-intro">Toque no produto para ver a descrição. Os cards marcados como exemplo são só para mostrar a vitrine com mais itens. Os quatro primeiros são os produtos que já estão na página inicial.</p>
+    </div>
+    <a href="checkout.html" class="showroom-cart-btn" data-cart-open aria-label="Ver carrinho">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6l-2-2H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+      </svg>
+      <span class="cart-count" data-cart-count>0</span>
+    </a>
+  </div>
+
+  <div class="wrap">
+    <div class="showroom-actions showroom-actions--top">
+      <button type="button" class="btn-showroom btn-showroom--navy" data-inquiry="manipular">Quero manipular o meu próprio remédio</button>
+    </div>
+    <div class="showroom showroom--gallery">
+      <div class="showroom-grid" id="showroomGrid" data-catalog="all"></div>
+    </div>
+    <div class="showroom-actions">
+      <a href="index.html#showroom" class="btn-showroom btn-showroom--line">Voltar aos destaques</a>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-wrap">
+    <a href="index.html" class="footer-brand" aria-label="Arte Pharmaceutica">
+      <img src="images/brand/logo-arte.png" alt="" class="footer-logo-img" width="100" height="42">
+    </a>
+    <p class="footer-tagline">Farmácia de manipulação · São José dos Pinhais</p>
+    <p class="footer-copy">© 2026 Arte Pharmaceutica. Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<a href="checkout.html" class="cart-float" data-cart-open aria-label="Abrir carrinho">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+    <path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6l-2-2H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+  </svg>
+  <span class="cart-count" data-cart-count>0</span>
+</a>
+
+<div class="product-modal" id="productModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalProductTitle">
+  <div class="modal-backdrop" data-modal-close></div>
+  <div class="modal-panel">
+    <button type="button" class="modal-close" data-modal-close aria-label="Fechar">×</button>
+    <div class="modal-grid">
+      <div class="modal-visual">
+        <span class="product-badge" data-modal-badge>Fórmula Exclusiva</span>
+        <img src="" alt="" data-modal-img>
+      </div>
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalProductTitle" data-modal-title></h2>
+        <p class="modal-price" data-modal-price></p>
+        <h3 class="modal-label">Para que serve?</h3>
+        <p class="modal-text" data-modal-purpose></p>
+        <h3 class="modal-label">Descrição detalhada</h3>
+        <p class="modal-text" data-modal-description></p>
+        <h3 class="modal-label">Composição</h3>
+        <p class="modal-text modal-text--sans" data-modal-composition></p>
+        <h3 class="modal-label">Modo de uso</h3>
+        <p class="modal-text modal-text--sans" data-modal-usage></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-gold modal-buy" data-modal-add>
+            <span class="btn-add-label">Adicionar ao Carrinho</span>
+            <span class="btn-add-done" aria-hidden="true">✓ Adicionado</span>
+          </button>
+          <button type="button" class="btn-showroom btn-showroom--navy" data-modal-doubt>Dúvidas sobre o produto</button>
+          <a href="checkout.html" class="link-gold modal-checkout-link" data-cart-open>Ir para o carrinho</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script src="store.js"></script>
+</body>
+</html>
