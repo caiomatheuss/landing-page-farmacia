@@ -31,6 +31,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS clientes_empresa_email_lower_idx
 ALTER TABLE pedidos
   ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
+-- Taxa de motoboy, separada do valor dos produtos
+ALTER TABLE pedidos
+  ADD COLUMN IF NOT EXISTS taxa_entrega NUMERIC(10,2) NOT NULL DEFAULT 0;
+
 -- ── Admin inicial ────────────────────────────────────────────
 -- NÃO cole senha em texto puro aqui.
 -- Depois do backend no ar, rode:

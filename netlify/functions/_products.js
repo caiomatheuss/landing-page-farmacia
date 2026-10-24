@@ -64,6 +64,7 @@ export async function salvarPedido({
   numero,
   metodo,
   total,
+  taxaEntrega = 0,
   asaasPaymentId,
   enderecoEntrega,
   itensCalculados,
@@ -77,8 +78,8 @@ export async function salvarPedido({
   `;
 
   const [pedidoRow] = await sql`
-    INSERT INTO pedidos (empresa_id, cliente_id, numero, metodo, status, total, asaas_payment_id, endereco_entrega)
-    VALUES (${empresaId}, ${clienteRow.id}, ${numero}, ${metodo}, 'PENDENTE', ${total}, ${asaasPaymentId}, ${enderecoEntrega || null})
+    INSERT INTO pedidos (empresa_id, cliente_id, numero, metodo, status, total, taxa_entrega, asaas_payment_id, endereco_entrega)
+    VALUES (${empresaId}, ${clienteRow.id}, ${numero}, ${metodo}, 'PENDENTE', ${total}, ${Number(taxaEntrega) || 0}, ${asaasPaymentId}, ${enderecoEntrega || null})
     RETURNING id
   `;
 

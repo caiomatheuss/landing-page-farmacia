@@ -246,6 +246,7 @@ function mapPedido(row) {
     metodo: row.metodo,
     status: row.status,
     total: Number(row.total),
+    taxa_entrega: Number(row.taxa_entrega || 0),
     asaas_payment_id: row.asaas_payment_id,
     endereco_entrega: row.endereco_entrega,
     created_at: row.created_at,
@@ -262,7 +263,7 @@ function mapPedido(row) {
 
 const SQL_PEDIDOS_BASE = `
   SELECT
-    p.id, p.numero, p.metodo, p.status, p.total,
+    p.id, p.numero, p.metodo, p.status, p.total, p.taxa_entrega,
     p.asaas_payment_id, p.endereco_entrega, p.created_at, p.cliente_id,
     c.nome AS cliente_nome, c.email AS cliente_email,
     c.telefone AS cliente_telefone, c.cpf AS cliente_cpf,

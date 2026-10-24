@@ -153,7 +153,11 @@
             <td style="min-width:220px;line-height:1.45">${p.endereco_entrega || '—'}</td>
             <td style="min-width:180px;line-height:1.45">${itens}</td>
             <td>${p.metodo || '—'}</td>
-            <td style="font-weight:600">${fmtMoney(p.total)}</td>
+            <td style="font-weight:600;line-height:1.45;white-space:nowrap">
+              <div>Produtos ${fmtMoney(Math.max(0, Number(p.total || 0) - Number(p.taxa_entrega || 0)))}</div>
+              <div style="font-weight:500;color:#5a6b7d">Entrega ${p.metodo === 'RETIRADA' ? 'retirada' : fmtMoney(p.taxa_entrega)}</div>
+              <div>Total ${fmtMoney(p.total)}</div>
+            </td>
             <td>
               <select class="adm-status-select" data-id="${p.id}" aria-label="Status do pedido ${p.numero || p.id}">
                 ${opts}

@@ -88,6 +88,7 @@ export const handler = async (event) => {
         numero,
         metodo: 'RETIRADA',
         total,
+        taxaEntrega: 0,
         asaasPaymentId: cobranca.id,
         enderecoEntrega: `[RETIRADA] ${unidadeRetirada}`,
         itensCalculados,

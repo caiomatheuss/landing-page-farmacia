@@ -969,6 +969,39 @@
       border-top: 1px solid rgba(0,43,91,0.1);
     }
 
+    .co-entrega-status {
+      margin: 0.2rem 0 1rem;
+      padding: 0.95rem 1rem;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      line-height: 1.45;
+    }
+    .co-entrega-status.is-loading {
+      background: var(--off-warm, #f3f1ec);
+      color: var(--navy);
+    }
+    .co-entrega-status.is-ok {
+      background: rgba(197, 160, 89, 0.16);
+      color: var(--navy);
+      font-weight: 600;
+    }
+    .co-entrega-status.is-erro {
+      background: #fdecec;
+      color: #8a2a2a;
+    }
+    .co-entrega-status a {
+      color: var(--navy);
+      font-weight: 700;
+    }
+    .co-bairro-fallback select {
+      font-size: 1.05rem;
+      min-height: 52px;
+    }
+    #bairroFallback[hidden],
+    #entregaStatus[hidden] {
+      display: none !important;
+    }
+
     .co-summary-line--total span:last-child {
       font-family: 'Cormorant Garamond', serif;
       font-size: 1.35rem;
@@ -1286,6 +1319,14 @@
                 </div>
               </div>
 
+              <p id="entregaStatus" class="co-entrega-status" hidden></p>
+              <div class="co-field co-bairro-fallback" id="bairroFallback" hidden>
+                <label class="co-label" for="selectBairroManual">Bairro *</label>
+                <select class="co-input" id="selectBairroManual">
+                  <option value="">Escolha o bairro</option>
+                </select>
+              </div>
+
               <!-- Rua e Número -->
               <div class="co-field-group">
                 <div class="co-field" id="fieldRua">
@@ -1595,6 +1636,7 @@
   <!-- ══════════════════════════════════════
        SCRIPT DO CHECKOUT
   ══════════════════════════════════════ -->
+  <script type="module" src="entrega-taxas.js"></script>
   <script>
     /* ════════════════════════════════════════════
        VARIÁVEIS EDITÁVEIS — altere aqui conforme
@@ -1615,6 +1657,8 @@
       formData: {},
       cartItems: [],
       cartTotal: 0,
+      taxaEntrega: null,
+      entregaOk: false,
       asaasId: null,
       pollingInterval: null,
     };
@@ -1689,7 +1733,8 @@ function loadCart() {
         </li>
       `).join('');
 
-      const frete = state.cartTotal > 0 ? 'A calcular' : '—';
+      const frete = textoFrete();
+      const total = totalPedido();
 
       el.innerHTML = `
         <ul class="co-summary-items">${itemsHTML}</ul>
@@ -1704,9 +1749,24 @@ function loadCart() {
         </div>
         <div class="co-summary-line co-summary-line--total">
           <span>Total</span>
-          <span>R$ ${state.cartTotal.toFixed(2).replace('.', ',')}</span>
+          <span>R$ ${total.toFixed(2).replace('.', ',')}</span>
         </div>
       `;
+    }
+
+    function reais(valor) {
+      return Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function totalPedido() {
+      return Math.round((state.cartTotal + (state.taxaEntrega || 0)) * 100) / 100;
+    }
+
+    function textoFrete() {
+      const tipo = document.querySelector('input[name="deliveryType"]:checked')?.value;
+      if (tipo === 'retirada') return 'Retirada na loja';
+      if (state.taxaEntrega == null) return 'A calcular';
+      return reais(state.taxaEntrega);
     }
 
     /* ════════════════════════════════════════════
@@ -1715,8 +1775,9 @@ function loadCart() {
     function populateParcelas() {
       const select = document.getElementById('selectParcelas');
       if (!select) return;
+      const prev = select.value;
       select.innerHTML = '';
-      const total = state.cartTotal || VALOR_TOTAL || 99.00; // fallback demo
+      const total = totalPedido() || VALOR_TOTAL || 99.00; // fallback demo
       for (let i = 1; i <= MAX_PARCELAS; i++) {
         const valor = (total / i).toFixed(2).replace('.', ',');
         const opt = document.createElement('option');
@@ -1726,6 +1787,7 @@ function loadCart() {
           : `${i}x de R$ ${valor} sem juros`;
         select.appendChild(opt);
       }
+      if (prev) select.value = prev;
     }
 
     /* ════════════════════════════════════════════
@@ -1818,6 +1880,15 @@ function loadCart() {
         check('fieldBairro', 'inputBairro', v => v.length >= 2);
         check('fieldCidade', 'inputCidade', v => v.length >= 2);
         check('fieldEstado', 'inputEstado', v => v.length === 2);
+        if (!state.entregaOk) {
+          valid = false;
+          const box = document.getElementById('entregaStatus');
+          if (box && box.hidden) {
+            box.hidden = false;
+            box.className = 'co-entrega-status is-erro';
+            box.textContent = 'Informe o CEP para calcular a taxa de entrega.';
+          }
+        }
       }
 
       return valid;
@@ -1881,26 +1952,197 @@ function loadCart() {
         });
       }
 
-      // CEP → busca endereço via ViaCEP
+    }
+
+    function entregaApi() {
+      return window.ArteEntrega || null;
+    }
+
+    function caixaEntrega(modo, texto) {
+      const box = document.getElementById('entregaStatus');
+      if (!box) return;
+      box.hidden = false;
+      box.className = `co-entrega-status is-${modo}`;
+      box.textContent = texto;
+    }
+
+    function mostrarForaDeArea() {
+      const box = document.getElementById('entregaStatus');
+      state.taxaEntrega = null;
+      state.entregaOk = false;
+      if (!box) return;
+      const wa = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent('Olá! Meu bairro não apareceu na área de entrega. Podem me ajudar?')}`;
+      box.hidden = false;
+      box.className = 'co-entrega-status is-erro';
+      box.innerHTML = `Região não disponível para entrega. Entre em contato pelo <a href="${wa}" target="_blank" rel="noopener noreferrer">WhatsApp</a>.`;
+      renderSummary();
+      populateParcelas();
+    }
+
+    function aplicarTaxaLocal(bairro, cidade) {
+      const api = entregaApi();
+      if (!api) {
+        caixaEntrega('erro', 'Não foi possível calcular a taxa. Recarregue a página.');
+        return;
+      }
+      const resultado = api.taxaPorEndereco(bairro, cidade);
+      if (!resultado.ok) {
+        if (resultado.motivo === 'ambiguo') {
+          document.getElementById('bairroFallback').hidden = false;
+          caixaEntrega('erro', 'Encontramos mais de um bairro com esse nome. Escolha na lista.');
+          state.taxaEntrega = null;
+          state.entregaOk = false;
+          renderSummary();
+          populateParcelas();
+          return;
+        }
+        mostrarForaDeArea();
+        return;
+      }
+      state.taxaEntrega = resultado.valor;
+      state.entregaOk = true;
+      const bairroInput = document.getElementById('inputBairro');
+      const cidadeInput = document.getElementById('inputCidade');
+      if (bairroInput) bairroInput.value = resultado.bairro;
+      if (cidadeInput && !cidadeInput.value) cidadeInput.value = resultado.cidade;
+      caixaEntrega('ok', `Taxa de entrega para ${resultado.bairro}: ${reais(resultado.valor)}`);
+      renderSummary();
+      populateParcelas();
+    }
+
+    function preencherSelectBairros() {
+      const sel = document.getElementById('selectBairroManual');
+      const api = entregaApi();
+      if (!sel || !api || sel.dataset.ready === '1') return;
+      api.listaBairros().forEach((grupo) => {
+        const og = document.createElement('optgroup');
+        og.label = grupo.cidade;
+        grupo.bairros.forEach((bairro) => {
+          const opt = document.createElement('option');
+          opt.value = `${grupo.cidade}||${bairro.nome}`;
+          opt.textContent = `${bairro.nome} — ${reais(bairro.valor)}`;
+          og.appendChild(opt);
+        });
+        sel.appendChild(og);
+      });
+      sel.dataset.ready = '1';
+    }
+
+    function mostrarFallbackBairro(mensagem) {
+      preencherSelectBairros();
+      const fallback = document.getElementById('bairroFallback');
+      if (fallback) fallback.hidden = false;
+      state.taxaEntrega = null;
+      state.entregaOk = false;
+      caixaEntrega('erro', mensagem);
+      renderSummary();
+      populateParcelas();
+    }
+
+    let consultaCepId = 0;
+
+    async function consultarCep() {
+      const cepInput = document.getElementById('inputCep');
+      if (!cepInput) return;
+      const nums = cepInput.value.replace(/\D/g, '');
+      if (nums.length !== 8) {
+        state.taxaEntrega = null;
+        state.entregaOk = false;
+        const box = document.getElementById('entregaStatus');
+        if (box) box.hidden = true;
+        renderSummary();
+        return;
+      }
+
+      const id = ++consultaCepId;
+      const btn = document.getElementById('btnBuscarCep');
+      if (btn) btn.disabled = true;
+      caixaEntrega('loading', 'Consultando CEP…');
+
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${nums}/json/`);
+        if (!res.ok) throw new Error('CEP');
+        const data = await res.json();
+        if (id !== consultaCepId) return;
+        if (data.erro) {
+          state.taxaEntrega = null;
+          state.entregaOk = false;
+          caixaEntrega('erro', 'CEP não encontrado. Confira os números.');
+          renderSummary();
+          populateParcelas();
+          return;
+        }
+
+        const set = (fieldId, val) => {
+          const el = document.getElementById(fieldId);
+          if (el && val) el.value = val;
+        };
+        set('inputRua', data.logradouro);
+        set('inputBairro', data.bairro);
+        set('inputCidade', data.localidade);
+        set('inputEstado', data.uf);
+        document.getElementById('bairroFallback').hidden = true;
+
+        if (!data.bairro) {
+          mostrarFallbackBairro('O CEP não trouxe o bairro. Escolha o bairro na lista.');
+          return;
+        }
+        aplicarTaxaLocal(data.bairro, data.localidade);
+        if (!document.getElementById('inputNumero')?.value) {
+          document.getElementById('inputNumero')?.focus();
+        }
+      } catch {
+        if (id !== consultaCepId) return;
+        mostrarFallbackBairro('Não foi possível consultar o CEP. Escolha o bairro na lista.');
+      } finally {
+        if (id === consultaCepId && btn) btn.disabled = false;
+      }
+    }
+
+    function setupEntrega() {
+      preencherSelectBairros();
       const cepInput = document.getElementById('inputCep');
       if (cepInput) {
-        cepInput.addEventListener('blur', async () => {
+        cepInput.addEventListener('input', () => {
           const nums = cepInput.value.replace(/\D/g, '');
-          if (nums.length !== 8) return;
-          try {
-            const res  = await fetch(`https://viacep.com.br/ws/${nums}/json/`);
-            const data = await res.json();
-            if (data.erro) return;
-            const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-            set('inputRua',    data.logradouro);
-            set('inputBairro', data.bairro);
-            set('inputCidade', data.localidade);
-            set('inputEstado', data.uf);
-            // Foca no campo número para o usuário completar
-            document.getElementById('inputNumero')?.focus();
-          } catch { /* silencia erro de rede */ }
+          if (nums.length === 8) {
+            consultarCep();
+            return;
+          }
+          if (state.taxaEntrega != null || state.entregaOk) {
+            state.taxaEntrega = null;
+            state.entregaOk = false;
+            const box = document.getElementById('entregaStatus');
+            if (box) box.hidden = true;
+            renderSummary();
+            populateParcelas();
+          }
         });
       }
+      document.getElementById('btnBuscarCep')?.addEventListener('click', consultarCep);
+
+      const recalcularManual = () => {
+        if (document.querySelector('input[name="deliveryType"]:checked')?.value === 'retirada') return;
+        const bairro = document.getElementById('inputBairro')?.value || '';
+        const cidade = document.getElementById('inputCidade')?.value || '';
+        if (bairro.trim().length < 2) return;
+        aplicarTaxaLocal(bairro, cidade);
+      };
+      document.getElementById('inputBairro')?.addEventListener('change', recalcularManual);
+      document.getElementById('inputCidade')?.addEventListener('change', recalcularManual);
+
+      document.getElementById('selectBairroManual')?.addEventListener('change', (e) => {
+        const valor = e.target.value;
+        if (!valor) return;
+        const [cidade, nome] = valor.split('||');
+        const bairroInput = document.getElementById('inputBairro');
+        const cidadeInput = document.getElementById('inputCidade');
+        const estadoInput = document.getElementById('inputEstado');
+        if (bairroInput) bairroInput.value = nome;
+        if (cidadeInput) cidadeInput.value = cidade;
+        if (estadoInput && !estadoInput.value) estadoInput.value = 'PR';
+        aplicarTaxaLocal(nome, cidade);
+      });
     }
 
     /* ════════════════════════════════════════════
@@ -2188,12 +2430,22 @@ function confirmarPedido(metodo) {
               const el = document.getElementById(id);
               if (el) el.value = '';
             });
+            state.taxaEntrega = 0;
+            state.entregaOk = true;
+            const box = document.getElementById('entregaStatus');
+            if (box) box.hidden = true;
+            const fallback = document.getElementById('bairroFallback');
+            if (fallback) fallback.hidden = true;
           } else {
             addressDiv.classList.remove('is-hidden');
             unidadeDiv.classList.remove('is-visible');
             // Desmarca unidade
             document.querySelectorAll('input[name="unidadeRetirada"]').forEach(r => r.checked = false);
+            state.taxaEntrega = null;
+            state.entregaOk = false;
           }
+          renderSummary();
+          populateParcelas();
         });
       });
     }
@@ -2225,6 +2477,7 @@ function confirmarPedido(metodo) {
               bairro:      document.getElementById('inputBairro')?.value,
               cidade:      document.getElementById('inputCidade')?.value,
               estado:      document.getElementById('inputEstado')?.value,
+              taxaEntrega: state.taxaEntrega || 0,
             };
             goToStep(2);
           }
@@ -2245,6 +2498,7 @@ function confirmarPedido(metodo) {
       populateParcelas();
       setupPix();
       applyMasks();
+      setupEntrega();
       setupPayMethodSwitch();
       setupCopyPix();
       setupFinalizarPedido();

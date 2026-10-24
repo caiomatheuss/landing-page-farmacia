@@ -1,5 +1,6 @@
 /* global process */
 import { calcularPedido, salvarPedido } from './_products.js';
+import { resolverTaxaEntrega } from '../../entrega-taxas.js';
 
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
 const ASAAS_URL = 'https://api.asaas.com/v3';
@@ -52,9 +53,11 @@ export const handler = async (event) => {
     const { cliente, itens, cartao, parcelas } = JSON.parse(event.body);
 
     // Preço vem só do banco de dados — "total" do navegador é ignorado
-    let total, descricao, itensCalculados, empresaId;
+    let total, descricao, itensCalculados, empresaId, taxaEntrega;
     try {
       ({ total, descricao, itensCalculados, empresaId } = await calcularPedido(itens));
+      taxaEntrega = resolverTaxaEntrega(cliente).taxa;
+      total = Math.round((total + taxaEntrega) * 100) / 100;
     } catch (err) {
       return {
         statusCode: 400,
@@ -118,6 +121,7 @@ export const handler = async (event) => {
         numero,
         metodo: 'CARTAO',
         total,
+        taxaEntrega,
         asaasPaymentId: cobranca.id,
         enderecoEntrega: [cliente.rua, cliente.numero, cliente.bairro, cliente.cidade, cliente.estado].filter(Boolean).join(', '),
         itensCalculados,
