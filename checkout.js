@@ -2,7 +2,6 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@base44/sdk@latest/di
 
 const base44 = createClient({ appId: 'SEU_APP_ID_AQUI' });
 
-const CHAVE_PIX   = 'artepharmaceutica@pix.com.br';
 const MAX_PARCELAS = 6;
 
 const state = {
@@ -13,6 +12,14 @@ const state = {
   cartTotal: 0,
   asaasId: null,
   pollingInterval: null,
+  pixPayload: '',
+  pixNumero: null,
+  pixExpiraEm: null,
+  pixAssinatura: '',
+  pixTimer: null,
+  pixPollInicio: 0,
+  pixGerando: false,
+  pixConfirmando: false,
 };
 
 /* ════════════ SALVAR PEDIDO ════════════ */
@@ -92,6 +99,12 @@ function goToStep(step) {
   document.getElementById('step1Panel').classList.toggle('u-hidden', step !== 1);
   document.getElementById('step2Panel').classList.toggle('u-hidden', step !== 2);
   document.getElementById('step3Panel').classList.toggle('u-hidden', step !== 3);
+  atualizarBotaoFinalizar();
+  if (step === 2 && state.payMethod === 'pix') gerarCobrancaPix(false);
+  else if (step !== 2) {
+    pararPolling();
+    pararTimerPix();
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -158,42 +171,103 @@ async function buscarCep() {
   if (btn) { btn.textContent = 'Atualizar'; btn.disabled = false; }
 }
 
-/* ════════════ POLLING — verifica pagamento a cada 5s ════════════ */
-function iniciarPolling(asaasId, metodo) {
-  if (!asaasId) return;
-  state.asaasId = asaasId;
+const PIX_POLL_MS = 5000;
+const PIX_POLL_LIMITE_MS = 15 * 60 * 1000;
 
-  // Mostra painel de aguardando
-  document.getElementById('pollingBox')?.classList.add('is-active');
-  document.getElementById('btnFinalizarPedido').style.display = 'none';
-  document.querySelectorAll('.co-pay-methods').forEach(el => el.style.pointerEvents = 'none');
+function atualizarBotaoFinalizar() {
+  const btn = document.getElementById('btnFinalizarPedido');
+  if (!btn) return;
+  btn.classList.toggle('is-off', state.payMethod === 'pix');
+}
 
-  let tentativas = 0;
-  const MAX_TENTATIVAS = 72; // 72 * 5s = 6 minutos
-  let timerEl = document.getElementById('pollingTimer');
+function mostrarPix(modo) {
+  const mapa = {
+    loading: ['pixLoading'],
+    erro: ['pixErro'],
+    pronto: ['pixQrBox', 'pollingBox'],
+    confirmado: ['pollingConfirmed'],
+    expirado: ['pixExpirado'],
+  };
+  const ligados = new Set(mapa[modo] || []);
+  ['pixLoading', 'pixErro', 'pixQrBox', 'pollingBox', 'pollingConfirmed', 'pixExpirado'].forEach(id => {
+    document.getElementById(id)?.classList.toggle('is-on', ligados.has(id));
+  });
+}
 
-  state.pollingInterval = setInterval(async () => {
-    tentativas++;
+function mostrarErroPix(mensagem, acao) {
+  const msg = document.getElementById('pixErroMsg');
+  const btn = document.getElementById('btnRetryPix');
+  if (msg) msg.textContent = mensagem;
+  if (btn) {
+    btn.dataset.acao = acao || 'gerar';
+    btn.textContent = acao === 'salvar' ? 'Tentar salvar de novo' : 'Tentar novamente';
+  }
+  mostrarPix('erro');
+}
 
-    if (timerEl) timerEl.textContent = `Verificando pagamento… (${tentativas * 5}s)`;
+function mostrarPixEncerrado(mensagem) {
+  const msg = document.getElementById('pixExpiradoMsg');
+  if (msg) msg.textContent = mensagem;
+  state.asaasId = null;
+  state.pixAssinatura = '';
+  mostrarPix('expirado');
+}
 
-    const resp = await fetch(`/.netlify/functions/verificar-pagamento?asaasId=${asaasId}`);
-    const data = await resp.json();
+function parseDataPix(valor) {
+  if (!valor) return null;
+  const texto = String(valor).includes('T') ? String(valor) : String(valor).replace(' ', 'T');
+  const data = new Date(texto);
+  return Number.isNaN(data.getTime()) ? null : data.getTime();
+}
 
-    // Status de pagamento confirmado no Asaas
-    if (data.status === 'RECEIVED' || data.status === 'CONFIRMED') {
+function textoExpira(ms) {
+  if (ms <= 0) return 'PIX expirado';
+  const totalSeg = Math.floor(ms / 1000);
+  const h = Math.floor(totalSeg / 3600);
+  const m = Math.floor((totalSeg % 3600) / 60);
+  const s = totalSeg % 60;
+  if (h > 0) return `Expira em ${h}h ${String(m).padStart(2, '0')}min`;
+  return `Expira em ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function pixJaExpirou() {
+  return state.pixExpiraEm != null && Date.now() >= state.pixExpiraEm;
+}
+
+function assinaturaPedido() {
+  return JSON.stringify({
+    itens: state.cartItems.map(i => [i.id, i.qty]),
+    total: state.cartTotal,
+  });
+}
+
+function pararTimerPix() {
+  if (state.pixTimer) {
+    clearInterval(state.pixTimer);
+    state.pixTimer = null;
+  }
+}
+
+function iniciarTimerPix() {
+  pararTimerPix();
+  const el = document.getElementById('pixExpira');
+  if (!el) return;
+  if (state.pixExpiraEm == null) {
+    el.hidden = true;
+    return;
+  }
+  const desenhar = () => {
+    const falta = state.pixExpiraEm - Date.now();
+    el.hidden = false;
+    el.textContent = textoExpira(falta);
+    if (falta <= 0) {
+      pararTimerPix();
       pararPolling();
-      pagamentoConfirmado(metodo);
-      return;
+      mostrarPixEncerrado('Este PIX expirou. Gere um novo QR Code para pagar.');
     }
-
-    // Timeout após 6 minutos
-    if (tentativas >= MAX_TENTATIVAS) {
-      pararPolling();
-      // Mesmo sem confirmação automática, vai para etapa 3 com mensagem pendente
-      confirmarPedido(metodo);
-    }
-  }, 5000);
+  };
+  desenhar();
+  state.pixTimer = setInterval(desenhar, 1000);
 }
 
 function pararPolling() {
@@ -203,21 +277,118 @@ function pararPolling() {
   }
 }
 
-function pagamentoConfirmado(metodo) {
-  // Esconde spinner e mostra confirmado
-  document.getElementById('pollingBox')?.classList.remove('is-active');
-  document.getElementById('pollingConfirmed')?.classList.add('is-active');
+function iniciarPolling(asaasId) {
+  pararPolling();
+  state.pixPollInicio = Date.now();
+  state.pollingInterval = setInterval(async () => {
+    if (Date.now() - state.pixPollInicio >= PIX_POLL_LIMITE_MS) {
+      pararPolling();
+      mostrarPixEncerrado('Não identificamos o pagamento em 15 minutos. Gere um novo QR Code para continuar.');
+      return;
+    }
+    try {
+      const resp = await fetch(`/.netlify/functions/verificar-pagamento?asaasId=${encodeURIComponent(asaasId)}`);
+      const data = await resp.json();
+      if (data.status === 'RECEIVED' || data.status === 'CONFIRMED') {
+        pararPolling();
+        concluirPixPago();
+        return;
+      }
+      if (data.status === 'OVERDUE') {
+        pararPolling();
+        mostrarPixEncerrado('Este PIX expirou. Gere um novo QR Code para pagar.');
+      }
+    } catch (e) {
+      console.warn('Erro ao verificar pagamento:', e);
+    }
+  }, PIX_POLL_MS);
+}
 
-  // Aguarda 2s para mostrar tela de confirmação final
-  setTimeout(() => {
-    confirmarPedido(metodo, true);
-  }, 2000);
+async function concluirPixPago() {
+  if (state.pixConfirmando) return;
+  state.pixConfirmando = true;
+  pararPolling();
+  pararTimerPix();
+  mostrarPix('confirmado');
+  try {
+    const resp = await fetch('/.netlify/functions/confirmar-pix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        asaasId: state.asaasId,
+        numero: state.pixNumero,
+        cliente: state.formData,
+        itens: state.cartItems,
+      }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      state.pixConfirmando = false;
+      mostrarErroPix(data.erro || 'O pagamento foi identificado, mas o pedido não foi salvo. Tente novamente.', 'salvar');
+      return;
+    }
+    confirmarPedido('pix', true);
+  } catch (e) {
+    state.pixConfirmando = false;
+    mostrarErroPix('O pagamento foi identificado, mas o pedido não foi salvo. Tente novamente.', 'salvar');
+  }
+}
+
+async function gerarCobrancaPix(forcar) {
+  if (state.pixGerando || state.pixConfirmando) return;
+  const assinatura = assinaturaPedido();
+  if (!forcar && state.asaasId && state.pixAssinatura === assinatura && !pixJaExpirou()) {
+    mostrarPix('pronto');
+    iniciarTimerPix();
+    iniciarPolling(state.asaasId);
+    return;
+  }
+  pararPolling();
+  pararTimerPix();
+  state.asaasId = null;
+  state.pixPayload = '';
+  state.pixGerando = true;
+  mostrarPix('loading');
+  try {
+    const resp = await fetch('/.netlify/functions/gerar-pix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cliente: state.formData, itens: state.cartItems, total: state.cartTotal }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    const imagem = data.encodedImage || data.qrCodeBase64;
+    const payload = data.payload || data.pixCopiaCola;
+    if (!resp.ok || !data.asaasId || !imagem || !payload) {
+      mostrarErroPix(data.erro || 'Não foi possível gerar o PIX. Tente novamente.');
+      return;
+    }
+    state.asaasId = data.asaasId;
+    state.pixNumero = data.numero || null;
+    state.pixPayload = payload;
+    state.pixAssinatura = assinatura;
+    state.pixExpiraEm = parseDataPix(data.expirationDate);
+    const img = document.getElementById('pixQrImg');
+    const chave = document.getElementById('pixKeyDisplay');
+    if (img) img.src = String(imagem).startsWith('data:') ? imagem : 'data:image/png;base64,' + imagem;
+    if (chave) chave.textContent = payload;
+    iniciarTimerPix();
+    mostrarPix('pronto');
+    iniciarPolling(data.asaasId);
+  } catch (e) {
+    mostrarErroPix('Não foi possível falar com o servidor. Verifique sua internet e tente novamente.');
+  } finally {
+    state.pixGerando = false;
+  }
 }
 
 /* ════════════ PIX ════════════ */
 function setupPix() {
-  const display = document.getElementById('pixKeyDisplay');
-  if (display) display.textContent = CHAVE_PIX;
+  document.getElementById('btnRetryPix')?.addEventListener('click', () => {
+    const acao = document.getElementById('btnRetryPix')?.dataset.acao;
+    if (acao === 'salvar') concluirPixPago();
+    else gerarCobrancaPix(true);
+  });
+  document.getElementById('btnNovoPix')?.addEventListener('click', () => gerarCobrancaPix(true));
 }
 
 function setupCopyPix() {
@@ -225,15 +396,17 @@ function setupCopyPix() {
   const fb  = document.getElementById('pixFeedback');
   if (!btn) return;
   btn.addEventListener('click', async () => {
+    const codigo = state.pixPayload;
+    if (!codigo) return;
     try {
-      await navigator.clipboard.writeText(CHAVE_PIX);
+      await navigator.clipboard.writeText(codigo);
     } catch {
       const ta = document.createElement('textarea');
-      ta.value = CHAVE_PIX; ta.style.position='fixed'; ta.style.opacity='0';
+      ta.value = codigo; ta.style.position='fixed'; ta.style.opacity='0';
       document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     }
     btn.classList.add('is-copied');
-    if (fb) fb.textContent = '✓ Chave copiada com sucesso!';
+    if (fb) fb.textContent = 'Código PIX copiado';
     setTimeout(() => { btn.classList.remove('is-copied'); if (fb) fb.textContent = ''; }, 3500);
   });
 }
@@ -243,42 +416,8 @@ function setupFinalizarPedido() {
   const btn = document.getElementById('btnFinalizarPedido');
   if (!btn) return;
   btn.addEventListener('click', async () => {
-    if (state.payMethod === 'cartao') {
-      await processarCartao(btn);
-    } else if (state.payMethod === 'pix') {
-      await processarPix(btn);
-    }
+    if (state.payMethod === 'cartao') await processarCartao(btn);
   });
-}
-
-async function processarPix(btn) {
-  btn.disabled = true;
-  btn.textContent = 'Gerando cobrança PIX…';
-
-  const resp = await fetch('/.netlify/functions/gerar-pix', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cliente: state.formData, itens: state.cartItems, total: state.cartTotal }),
-  });
-  const data = await resp.json();
-
-  if (resp.ok && data.asaasId) {
-    await salvarPedido({
-      numero: data.numero, status: 'pendente', metodo_pagamento: 'pix',
-      total: state.cartTotal, itens: JSON.stringify(state.cartItems),
-      cliente_nome: state.formData.nome, cliente_email: state.formData.email,
-      cliente_telefone: state.formData.telefone, cliente_cpf: state.formData.cpf,
-      endereco_rua: state.formData.rua, endereco_numero: state.formData.numero,
-      endereco_complemento: state.formData.complemento||'', endereco_bairro: state.formData.bairro,
-      endereco_cidade: state.formData.cidade, endereco_estado: state.formData.estado,
-      endereco_cep: state.formData.cep, asaas_id: data.asaasId,
-    });
-    iniciarPolling(data.asaasId, 'pix');
-  } else {
-    btn.disabled = false;
-    btn.innerHTML = 'Finalizar pedido <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
-    alert(data.erro || 'Erro ao gerar cobrança PIX.');
-  }
 }
 
 async function processarCartao(btn) {
@@ -327,7 +466,7 @@ function confirmarPedido(metodo, confirmado = false) {
   localStorage.removeItem('arte_cart');
   const msgs = {
     cartao: 'Seu pagamento com cartão foi aprovado! Em breve você receberá a confirmação por e-mail.',
-    pix:    confirmado ? 'PIX recebido e confirmado! Seu pedido já está sendo preparado.' : 'Pagamento PIX pendente. Assim que identificarmos, seu pedido será liberado.',
+    pix:    confirmado ? 'Pagamento confirmado! Seu pedido já está sendo preparado.' : 'Pagamento PIX pendente. Assim que identificarmos, seu pedido será liberado.',
   };
   const confirmText = document.getElementById('confirmText');
   if (confirmText) confirmText.textContent = msgs[metodo] || msgs.cartao;
@@ -342,6 +481,9 @@ function setupPayMethodSwitch() {
       document.querySelectorAll('.co-method-panel').forEach(p => p.classList.remove('is-active'));
       const panelMap = { cartao: 'panelCartao', pix: 'panelPix' };
       document.getElementById(panelMap[radio.value])?.classList.add('is-active');
+      atualizarBotaoFinalizar();
+      if (radio.value === 'pix') gerarCobrancaPix(false);
+      else pararPolling();
     });
   });
 }

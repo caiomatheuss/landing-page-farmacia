@@ -1,5 +1,5 @@
 /* global process */
-import { calcularPedido, salvarPedido } from './_products.js';
+import { calcularPedido } from './_products.js';
 import { resolverTaxaEntrega } from '../../entrega-taxas.js';
 
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
@@ -54,9 +54,9 @@ export const handler = async (event) => {
     const { cliente, itens } = JSON.parse(event.body);
 
     // Preço vem só do banco de dados — "total" do navegador é ignorado
-    let total, descricao, itensCalculados, empresaId, taxaEntrega;
+    let total, descricao, taxaEntrega;
     try {
-      ({ total, descricao, itensCalculados, empresaId } = await calcularPedido(itens));
+      ({ total, descricao } = await calcularPedido(itens));
       taxaEntrega = resolverTaxaEntrega(cliente).taxa;
       total = Math.round((total + taxaEntrega) * 100) / 100;
     } catch (err) {
@@ -102,36 +102,31 @@ export const handler = async (event) => {
     for (let tentativa = 0; tentativa < 3; tentativa++) {
       const qrResp = await fetch(`${ASAAS_URL}/payments/${cobranca.id}/pixQrCode`, { headers });
       qrData = await qrResp.json();
-      if (qrData.payload) break;
+      if (qrData.payload && qrData.encodedImage) break;
       await new Promise(r => setTimeout(r, 1000));
     }
 
-    // Salva o pedido de verdade no banco (não trava a resposta se falhar —
-    // o pagamento já foi criado no Asaas, isso aqui é só nosso histórico)
-    try {
-      await salvarPedido({
-        empresaId,
-        cliente,
-        numero,
-        metodo: 'PIX',
-        total,
-        taxaEntrega,
-        asaasPaymentId: cobranca.id,
-        enderecoEntrega: [cliente.rua, cliente.numero, cliente.bairro, cliente.cidade, cliente.estado].filter(Boolean).join(', '),
-        itensCalculados,
-      });
-    } catch (err) {
-      console.error('[gerar-pix] Falha ao salvar pedido no Neon:', err.message);
+    if (!qrData.payload || !qrData.encodedImage) {
+      return {
+        statusCode: 502,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ erro: 'Não foi possível gerar o QR Code do PIX. Tente novamente.' }),
+      };
     }
+
+    const encodedImage = String(qrData.encodedImage).replace(/\s/g, '');
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        asaasId:      cobranca.id,
+        asaasId: cobranca.id,
         numero,
-        pixCopiaCola: qrData.payload       || null,
-        qrCodeBase64: qrData.encodedImage  || null,
+        encodedImage,
+        payload: qrData.payload,
+        expirationDate: qrData.expirationDate || null,
+        pixCopiaCola: qrData.payload,
+        qrCodeBase64: encodedImage,
       }),
     };
 

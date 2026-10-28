@@ -2342,6 +2342,130 @@ body.modal-open { overflow: hidden; }
   .como-trabalhamos-wrap .formula-mosaic { order: -1; }
 }
 
+.especialidades-section {
+  background: #ffffff;
+  padding: 5rem 2rem;
+}
+
+.especialidades-section .eyebrow {
+  letter-spacing: 3px;
+  text-align: center;
+}
+
+.especialidades-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  font-weight: 500;
+  line-height: 1.15;
+  color: #1a3a6b;
+  text-align: center;
+  max-width: 18ch;
+  margin: 0 auto 0.9rem;
+}
+
+.especialidades-lead {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-soft);
+  text-align: center;
+  max-width: 38rem;
+  margin: 0 auto 2.5rem;
+}
+
+.especialidades-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.especialidade-card {
+  background: #ffffff;
+  border-top: 3px solid #1a3a6b;
+  border-radius: 2px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: border-color 0.35s cubic-bezier(.4, 0, .2, 1), box-shadow 0.35s cubic-bezier(.4, 0, .2, 1), transform 0.35s cubic-bezier(.4, 0, .2, 1), opacity 0.9s var(--ease);
+}
+
+.especialidade-card.reveal {
+  transition-delay: 0s, 0s, var(--d, 0ms), var(--d, 0ms);
+}
+
+.especialidade-card:hover {
+  border-top-color: #b8922a;
+  box-shadow: 0 12px 40px rgba(13, 37, 69, 0.10);
+  transform: translateY(-4px);
+  transition-delay: 0s;
+}
+
+.especialidade-card h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: #1a3a6b;
+  margin: 0.9rem 0 0.55rem;
+}
+
+.especialidade-card p {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  font-weight: 300;
+  color: var(--text-soft);
+  margin-bottom: 1.4rem;
+}
+
+.esp-icon {
+  display: flex;
+  width: 36px;
+  height: 36px;
+}
+
+.esp-icon svg {
+  width: 36px;
+  height: 36px;
+}
+
+.esp-btn {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #1a3a6b;
+  border: 1px solid #1a3a6b;
+  padding: 0.6rem 1.2rem;
+  border-radius: 2px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.35s cubic-bezier(.4, 0, .2, 1), color 0.35s cubic-bezier(.4, 0, .2, 1), border-color 0.35s cubic-bezier(.4, 0, .2, 1);
+}
+
+.esp-btn:hover {
+  background: #b8922a;
+  color: #ffffff;
+  border-color: #b8922a;
+}
+
+@media (max-width: 768px) {
+  .especialidades-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .especialidades-grid { grid-template-columns: 1fr; }
+  .esp-btn { width: 100%; }
+}
+
 /* ── Galeria e WhatsApp com nome ── */
 .catalog-page {
   background: var(--off);

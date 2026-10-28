@@ -68,6 +68,7 @@ export async function salvarPedido({
   asaasPaymentId,
   enderecoEntrega,
   itensCalculados,
+  status = 'PENDENTE',
 }) {
   const [clienteRow] = await sql`
     INSERT INTO clientes (empresa_id, nome, email, telefone, cpf)
@@ -79,7 +80,7 @@ export async function salvarPedido({
 
   const [pedidoRow] = await sql`
     INSERT INTO pedidos (empresa_id, cliente_id, numero, metodo, status, total, taxa_entrega, asaas_payment_id, endereco_entrega)
-    VALUES (${empresaId}, ${clienteRow.id}, ${numero}, ${metodo}, 'PENDENTE', ${total}, ${Number(taxaEntrega) || 0}, ${asaasPaymentId}, ${enderecoEntrega || null})
+    VALUES (${empresaId}, ${clienteRow.id}, ${numero}, ${metodo}, ${status}, ${total}, ${Number(taxaEntrega) || 0}, ${asaasPaymentId}, ${enderecoEntrega || null})
     RETURNING id
   `;
 
@@ -91,4 +92,21 @@ export async function salvarPedido({
   }
 
   return pedidoRow.id;
+}
+
+// Grava o pedido como pago, ou promove um pedido já criado
+// para a mesma cobrança (evita duplicar se o cliente confirmar de novo).
+export async function garantirPedidoPago(dados) {
+  const [existente] = await sql`
+    SELECT id, status FROM pedidos
+    WHERE asaas_payment_id = ${dados.asaasPaymentId}
+    LIMIT 1
+  `;
+  if (existente) {
+    if (existente.status !== 'PAGO') {
+      await sql`UPDATE pedidos SET status = 'PAGO' WHERE id = ${existente.id}`;
+    }
+    return existente.id;
+  }
+  return salvarPedido({ ...dados, status: 'PAGO' });
 }
