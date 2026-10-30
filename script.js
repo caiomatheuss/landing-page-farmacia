@@ -214,23 +214,27 @@ function attrsImg(foto, modo) {
   return `src="${escHtml(foto.src)}" alt="${escHtml(foto.alt)}" loading="lazy" ${comum}`;
 }
 
-function slideHtml(foto, indice, total, adiarFora) {
+function slideHtml(foto, indice, total, adiarFora, comTag) {
   const modo = indice === 0 ? 'eager' : (adiarFora ? 'adiar' : 'lazy');
-  const modoBlur = modo === 'eager' ? 'eager' : modo;
-  const vertical = foto.orientacao === 'v';
-  const blur = vertical
-    ? `<img class="gal-blur" ${attrsImg({ ...foto, alt: '' }, modoBlur)} aria-hidden="true">`
-    : '';
   const legenda = foto.legenda
     ? `<figcaption><span>${escHtml(foto.legenda)}</span></figcaption>`
     : '';
-  return `<figure class="espaco-slide gal-slide is-${foto.orientacao}">
+  return `<figure class="espaco-slide gal-slide is-h">
     <button type="button" class="gal-frame" data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}" aria-label="Ampliar foto ${indice + 1} de ${total}">
-      ${blur}
       <img class="gal-photo" ${attrsImg(foto, modo)}>
-      ${tagUnidade(foto.unidade)}
+      ${comTag ? tagUnidade(foto.unidade) : ''}
     </button>
     ${legenda}
+  </figure>`;
+}
+
+function retratoHtml(foto, comTag) {
+  return `<figure class="retrato-card">
+    <button type="button" data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}" aria-label="Ampliar foto">
+      <img src="${escHtml(foto.src)}" alt="${escHtml(foto.alt)}" width="${foto.width}" height="${foto.height}" loading="lazy" decoding="async">
+      ${comTag ? tagUnidade(foto.unidade) : ''}
+    </button>
+    ${foto.legenda ? `<figcaption>${escHtml(foto.legenda)}</figcaption>` : ''}
   </figure>`;
 }
 
@@ -286,21 +290,44 @@ function montarFachadas() {
   mostrarSecao(secao);
 }
 
+function montarRetratos(secao, fotos, comTag) {
+  const faixa = secao?.querySelector('[data-mount="retratos"]');
+  if (!faixa) return;
+  if (!fotos.length) {
+    faixa.hidden = true;
+    faixa.innerHTML = '';
+    return;
+  }
+  faixa.hidden = false;
+  faixa.innerHTML = fotos.map((foto) => retratoHtml(foto, comTag)).join('');
+}
+
 function montarCarrossel(root) {
   const secaoNome = root.dataset.secao;
   if (!secaoNome) return;
   const track = root.querySelector('[data-mount="slides"]');
   if (!track) return;
   const fotos = fotosDa(secaoNome);
+  const deitadas = fotos.filter((foto) => foto.orientacao === 'h');
+  const emPe = fotos.filter((foto) => foto.orientacao === 'v');
   const secao = root.closest('section');
+  const comTag = secaoNome === 'ambiente';
   if (!fotos.length) {
     if (secao) secao.hidden = true;
     root.removeAttribute('data-carousel');
     return;
   }
-  const muitos = fotos.length > 8;
-  track.innerHTML = fotos.map((foto, i) => slideHtml(foto, i, fotos.length, muitos)).join('');
-  if (muitos) root.dataset.lazySlides = '1';
+  if (!deitadas.length) {
+    root.hidden = true;
+    root.removeAttribute('data-carousel');
+  } else {
+    root.hidden = false;
+    const muitos = deitadas.length > 8;
+    track.innerHTML = deitadas.map((foto, i) => slideHtml(foto, i, deitadas.length, muitos, comTag)).join('');
+    if (muitos) root.dataset.lazySlides = '1';
+    else delete root.dataset.lazySlides;
+  }
+  montarRetratos(secao, emPe, comTag);
   if (secao) mostrarSecao(secao);
 }
 
@@ -319,7 +346,6 @@ function montarFormula() {
     <figure class="formula-shot ${slots[i]} is-${foto.orientacao}">
       <button type="button" class="formula-hit" data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}" aria-label="Ampliar foto da formulação">
         <img src="${escHtml(foto.src)}" alt="${escHtml(foto.alt)}" width="${foto.width}" height="${foto.height}" loading="lazy" decoding="async">
-        ${tagUnidade(foto.unidade)}
       </button>
     </figure>`).join('') + (extras.length ? `<div class="formula-mais">${extras.map((foto) => `
       <button type="button" class="formula-mais-btn" data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}">
@@ -340,7 +366,6 @@ function montarGrade(secaoNome) {
   const itemDe = (foto) => `<figure class="galeria-item is-${foto.orientacao}">
       <button type="button" data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}" aria-label="Ampliar foto">
         <img src="${escHtml(foto.src)}" alt="${escHtml(foto.alt)}" width="${foto.width}" height="${foto.height}" loading="lazy" decoding="async">
-        ${tagUnidade(foto.unidade)}
       </button>
     </figure>`;
   for (let i = 0; i < fotos.length; i += 1) {
@@ -380,9 +405,7 @@ function atualizarColagem() {
     img.loading = 'lazy';
     figura.dataset.lightbox = foto.src;
     figura.dataset.caption = foto.legenda || foto.alt;
-    if (!figura.querySelector('.gal-tag')) {
-      figura.insertAdjacentHTML('beforeend', tagUnidade(foto.unidade));
-    }
+    figura.querySelector('.gal-tag')?.remove();
   });
 }
 
@@ -551,7 +574,7 @@ function initLightbox() {
 
   document.querySelectorAll('[data-lightbox]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const raiz = btn.closest('[data-carousel], [data-mount="formula"], .galeria-grid, .fachadas-grid, .servicos-gallery') || btn.parentElement;
+      const raiz = btn.closest('[data-carousel], [data-mount="formula"], [data-mount="retratos"], .galeria-grid, .fachadas-grid, .servicos-gallery') || btn.parentElement;
       const nodes = [...raiz.querySelectorAll('[data-lightbox]')];
       const lista = nodes.length ? nodes : [btn];
       abrir(lista, Math.max(0, lista.indexOf(btn)));

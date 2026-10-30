@@ -537,7 +537,6 @@ a { color: inherit; }
   aspect-ratio: 1 / 1;
   box-shadow: 0 18px 40px rgba(0, 43, 91, 0.12);
   z-index: 3;
-  border: 4px solid var(--off);
 }
 
 .servicos-shot--main img { object-position: center top; }
@@ -2844,6 +2843,51 @@ body.modal-open { overflow: hidden; }
 
 .gal-slide figcaption { min-height: 3.2rem; }
 
+.retrato-faixa {
+  display: flex;
+  gap: 1.35rem;
+  justify-content: safe center;
+  margin-top: clamp(2.2rem, 4vw, 3.4rem);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0.4rem 0 1.2rem;
+}
+
+.retrato-faixa[hidden] { display: none !important; }
+
+.retrato-card {
+  flex: 0 0 min(240px, 70vw);
+  margin: 0;
+  scroll-snap-align: center;
+}
+
+.retrato-card button {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.retrato-card img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  box-shadow: 28px 32px 64px rgba(0, 43, 91, 0.14);
+}
+
+.retrato-card figcaption {
+  margin-top: 0.85rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-soft);
+  font-weight: 300;
+}
+
 .espaco-dots.is-counter {
   min-width: 4.8rem;
   font-size: 0.78rem;
@@ -2853,38 +2897,25 @@ body.modal-open { overflow: hidden; }
 }
 
 .como-trabalhamos .formula-mosaic {
-  height: auto;
-  min-height: 0;
-  align-self: start;
-  align-items: start;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto auto;
+  height: min(520px, 64vw);
+  min-height: 400px;
+  align-self: center;
+  align-items: stretch;
+  grid-template-columns: 1.25fr 0.85fr;
+  grid-template-rows: 1fr 1fr;
 }
 
+.formula-shot { height: 100%; }
 .formula-hit { height: 100%; }
 
 .formula-shot.is-h img,
-.formula-shot--main.is-h img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  object-position: center;
-}
-
+.formula-shot--main.is-h img,
 .formula-shot.is-v.formula-shot--top img,
-.formula-shot.is-v.formula-shot--bottom img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  object-position: center top;
-}
-
+.formula-shot.is-v.formula-shot--bottom img,
 .formula-shot--main.is-v img {
   width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 4;
+  height: 100%;
+  aspect-ratio: auto;
   object-fit: cover;
   object-position: center top;
 }
@@ -2991,7 +3022,6 @@ body.modal-open { overflow: hidden; }
 
 @media (max-width: 768px) {
   .fachadas-grid { grid-template-columns: 1fr; }
-  .gal-carousel .gal-frame { aspect-ratio: 4 / 5; }
 }
 
 @media (max-width: 480px) {
@@ -3000,10 +3030,19 @@ body.modal-open { overflow: hidden; }
 }
 
 @media (max-width: 800px) {
-  .como-trabalhamos .formula-mosaic { grid-template-columns: 1fr; }
-  .formula-shot--main.is-v img {
+  .como-trabalhamos .formula-mosaic {
+    height: auto;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .formula-shot { height: auto; }
+  .formula-shot--main.is-v img,
+  .formula-shot.is-v.formula-shot--top img,
+  .formula-shot.is-v.formula-shot--bottom img {
     height: auto;
     aspect-ratio: 3 / 4;
   }
-  .formula-shot--main.is-h img { aspect-ratio: 4 / 3; }
+  .formula-shot--main.is-h img,
+  .formula-shot.is-h img { height: auto; aspect-ratio: 4 / 3; }
 }
