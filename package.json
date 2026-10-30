@@ -2,7 +2,13 @@
   "name": "arte-pharmaceutica",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "galeria": "node scripts/gerar-galeria.js"
+  },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0"
+  },
+  "devDependencies": {
+    "image-size": "^2.0.4"
   }
 }
