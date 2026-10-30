@@ -214,7 +214,32 @@ function productCardHtml(p) {
     </article>`;
 }
 
-function initStore() {
+async function hidratarPrecos() {
+  let data;
+  try {
+    const { supabase } = await import('./config.js');
+    if (!supabase) return;
+    const resposta = await supabase
+      .from('produtos')
+      .select('codigo, nome, preco')
+      .eq('ativo', true);
+    if (resposta.error || !resposta.data?.length) return;
+    data = resposta.data;
+  } catch {
+    return;
+  }
+
+  const porCodigo = Object.fromEntries(data.map((produto) => [produto.codigo, produto]));
+  PRODUCTS.forEach((produto) => {
+    const db = porCodigo[produto.id];
+    if (!db || produto.placeholder) return;
+    produto.name = db.nome;
+    produto.price = Number(db.preco);
+  });
+}
+
+async function initStore() {
+  await hidratarPrecos();
   const grid = document.getElementById('showroomGrid');
   if (!grid) return;
 

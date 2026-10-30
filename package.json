@@ -6,7 +6,7 @@
     "galeria": "node scripts/gerar-galeria.js"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0"
+    "@supabase/supabase-js": "^2.49.4"
   },
   "devDependencies": {
     "image-size": "^2.0.4"

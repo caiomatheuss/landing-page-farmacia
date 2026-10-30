@@ -127,7 +127,7 @@ export const handler = async (event) => {
         itensCalculados,
       });
     } catch (err) {
-      console.error('[processar-cartao] Falha ao salvar pedido no Neon:', err.message);
+      console.error('[processar-cartao] Falha ao salvar pedido no Supabase:', err.message);
     }
 
     return {

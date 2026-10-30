@@ -166,9 +166,15 @@
     </form>
   </div>
   <script type="module">
-    import { login, cadastrar, getUsuarioAtualSync, redirecionarPorRole } from './auth.js';
+    import { supabase } from './config.js';
+    import { cadastrar, getUsuarioAtual, montarUsuario, redirecionarPorRole } from './auth.js';
 
-    const jaLogado = getUsuarioAtualSync();
+    let jaLogado = null;
+    try {
+      jaLogado = await getUsuarioAtual();
+    } catch {
+      jaLogado = null;
+    }
     if (jaLogado) redirecionarPorRole(jaLogado);
 
     const formLogin = document.getElementById('formLogin');
@@ -194,10 +200,13 @@
       btn.disabled = true;
       btn.textContent = 'Entrando…';
       try {
-        const user = await login(
-          document.getElementById('email').value.trim(),
-          document.getElementById('senha').value
-        );
+        if (!supabase) throw new Error('Configure SUPABASE_URL e SUPABASE_ANON_KEY em config.js.');
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: document.getElementById('email').value.trim().toLowerCase(),
+          password: document.getElementById('senha').value,
+        });
+        if (error) throw new Error(error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : error.message);
+        const user = await montarUsuario(data.user);
         redirecionarPorRole(user);
       } catch (err) {
         erro.textContent = err.message || 'E-mail ou senha incorretos.';

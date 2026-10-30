@@ -1,3 +1,13 @@
+# Variáveis da Netlify (Site settings → Environment variables):
+# SUPABASE_URL
+# SUPABASE_SERVICE_ROLE_KEY
+# ASAAS_API_KEY
+# ASAAS_WEBHOOK_TOKEN
+# A anon key fica em config.js. Não coloque a service role no frontend.
+
+[functions]
+  node_bundler = "esbuild"
+
 [[headers]]
   for = "/*"
   [headers.values]

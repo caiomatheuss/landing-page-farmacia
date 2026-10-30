@@ -1,4 +1,7 @@
 -- ══════════════════════════════════════════════════════════════
+--  OBSOLETO. O banco agora é o Supabase.
+--  Use sql/supabase-schema.sql no SQL Editor do Supabase.
+-- ══════════════════════════════════════════════════════════════
 --  Arte Pharmaceutica — autenticação na tabela clientes
 --  Rode no SQL Editor do Neon (ou psql) uma vez.
 --  email já pode existir no banco; IF NOT EXISTS evita erro.

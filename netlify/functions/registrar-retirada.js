@@ -94,7 +94,7 @@ export const handler = async (event) => {
         itensCalculados,
       });
     } catch (err) {
-      console.error('[registrar-retirada] Falha ao salvar pedido no Neon:', err.message);
+      console.error('[registrar-retirada] Falha ao salvar pedido no Supabase:', err.message);
     }
 
     return {

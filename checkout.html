@@ -1753,6 +1753,22 @@ const PRODUCTS_PRICES = {
   'pantoarte':     { name: 'Pantoarte',              price: 95, img: 'images/products/pantoarte.png' },
 };
 
+async function hidratarPrecosCheckout() {
+  try {
+    const { supabase } = await import('./config.js');
+    if (!supabase) return;
+    const { data, error } = await supabase.from('produtos').select('codigo, nome, preco').eq('ativo', true);
+    if (error || !data) return;
+    data.forEach((produto) => {
+      if (!PRODUCTS_PRICES[produto.codigo]) return;
+      PRODUCTS_PRICES[produto.codigo].name = produto.nome;
+      PRODUCTS_PRICES[produto.codigo].price = Number(produto.preco);
+    });
+  } catch (err) {
+    console.warn('Catálogo local em uso.', err);
+  }
+}
+
 function loadCart() {
   try {
     const raw = localStorage.getItem('arte-pharma-cart');
@@ -2733,7 +2749,8 @@ function confirmarPedido(metodo, opcoes) {
     /* ════════════════════════════════════════════
        INICIALIZAÇÃO
     ════════════════════════════════════════════ */
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await hidratarPrecosCheckout();
       loadCart();
       renderSummary();
       populateParcelas();

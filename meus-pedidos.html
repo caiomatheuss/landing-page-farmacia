@@ -191,7 +191,8 @@
 
   <script type="module" src="login-modal.js"></script>
   <script type="module">
-    import { getUsuarioAtual, apiFetch, redirecionarPorRole } from './auth.js';
+    import { getUsuarioAtual, redirecionarPorRole } from './auth.js';
+    import { supabase } from './config.js';
 
     const content = document.getElementById('mpContent');
 
@@ -282,9 +283,23 @@
       content.innerHTML = `<div class="mp-list">${html}</div>`;
     }
 
-    async function carregarPedidos() {
-      const data = await apiFetch('/cliente/pedidos');
-      return data.pedidos || [];
+    async function carregarPedidos(clienteId) {
+      const { data, error } = await supabase
+        .from('pedidos')
+        .select(`
+          id, numero, metodo, status, total, created_at,
+          pedido_itens (quantidade, produtos (nome))
+        `)
+        .eq('cliente_id', clienteId)
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return (data || []).map((pedido) => ({
+        ...pedido,
+        itens: (pedido.pedido_itens || []).map((item) => ({
+          nome: item.produtos?.nome || '—',
+          quantidade: item.quantidade,
+        })),
+      }));
     }
 
     const user = await getUsuarioAtual();
@@ -293,10 +308,12 @@
       window.location.replace('login.html');
     } else if (user.role === 'admin') {
       redirecionarPorRole(user);
+    } else if (!user.id) {
+      content.innerHTML = `<div class="mp-state"><div class="mp-state-title">Cadastro incompleto</div><p class="mp-state-text">Sua conta ainda não está ligada a um cliente. Rode o SQL do Supabase e entre de novo.</p></div>`;
     } else {
       content.innerHTML = `<div class="mp-state"><div class="mp-state-title" style="color:#8a9ab0">Buscando seus pedidos…</div></div>`;
       try {
-        const pedidos = await carregarPedidos();
+        const pedidos = await carregarPedidos(user.id);
         renderPedidos(pedidos);
       } catch (err) {
         content.innerHTML = `<div class="mp-state"><div class="mp-state-title">Não foi possível carregar</div><p class="mp-state-text">${err.message}</p></div>`;

@@ -1,34 +1,27 @@
-// ══════════════════════════════════════════════
-//  _products.js — Catálogo e pedidos (Neon)
-//  Preço vem sempre do banco — nunca do navegador.
-// ══════════════════════════════════════════════
-import { sql } from './_db.js';
+import { supabaseAdmin } from './_supabase.js';
 
-// Fixo por enquanto (só existe 1 farmácia). Quando virar SaaS
-// multi-cliente, isso passa a vir de qual empresa está logada.
 const EMPRESA_ID = 1;
 
-// Recalcula o total a partir do banco de dados e da lista de
-// { id, qty } que veio do navegador. Ignora qualquer "price"/"total"
-// enviado junto. Lança erro se algum item não existir ou a
-// quantidade for inválida.
 export async function calcularPedido(itens) {
   if (!Array.isArray(itens) || itens.length === 0) {
     throw new Error('Carrinho vazio ou inválido.');
   }
 
-  const codigos = itens.map((i) => i?.id).filter(Boolean);
+  const codigos = itens.map((item) => item?.id).filter(Boolean);
   if (codigos.length !== itens.length) {
     throw new Error('Item de carrinho inválido.');
   }
 
-  const produtos = await sql`
-    SELECT id, codigo, nome, preco
-    FROM produtos
-    WHERE empresa_id = ${EMPRESA_ID} AND codigo = ANY(${codigos}) AND ativo = true
-  `;
-  const porCodigo = Object.fromEntries(produtos.map((p) => [p.codigo, p]));
+  const { data: produtos, error } = await supabaseAdmin
+    .from('produtos')
+    .select('id, codigo, nome, preco')
+    .eq('empresa_id', EMPRESA_ID)
+    .eq('ativo', true)
+    .in('codigo', codigos);
 
+  if (error) throw new Error(error.message);
+
+  const porCodigo = Object.fromEntries((produtos || []).map((produto) => [produto.codigo, produto]));
   let total = 0;
   const linhas = [];
   const itensCalculados = [];
@@ -56,8 +49,47 @@ export async function calcularPedido(itens) {
   };
 }
 
-// Grava o pedido de verdade no banco (cliente + pedido + itens).
-// Chamar DEPOIS que o Asaas já confirmou a cobrança.
+async function garantirCliente(empresaId, cliente) {
+  const email = String(cliente.email || '').trim().toLowerCase();
+  const nome = String(cliente.nome || '').trim();
+  const telefone = cliente.telefone || null;
+  const cpf = cliente.cpf || null;
+
+  const { data: existente, error: buscaErr } = await supabaseAdmin
+    .from('clientes')
+    .select('id')
+    .eq('empresa_id', empresaId)
+    .eq('email', email)
+    .maybeSingle();
+
+  if (buscaErr) throw new Error(buscaErr.message);
+
+  if (existente) {
+    const { error } = await supabaseAdmin
+      .from('clientes')
+      .update({ nome, telefone, cpf })
+      .eq('id', existente.id);
+    if (error) throw new Error(error.message);
+    return existente.id;
+  }
+
+  const { data: criado, error } = await supabaseAdmin
+    .from('clientes')
+    .insert({
+      empresa_id: empresaId,
+      nome,
+      email,
+      telefone,
+      cpf,
+      role: 'customer',
+    })
+    .select('id')
+    .single();
+
+  if (error) throw new Error(error.message);
+  return criado.id;
+}
+
 export async function salvarPedido({
   empresaId,
   cliente,
@@ -70,43 +102,58 @@ export async function salvarPedido({
   itensCalculados,
   status = 'PENDENTE',
 }) {
-  const [clienteRow] = await sql`
-    INSERT INTO clientes (empresa_id, nome, email, telefone, cpf)
-    VALUES (${empresaId}, ${cliente.nome}, ${cliente.email}, ${cliente.telefone || null}, ${cliente.cpf || null})
-    ON CONFLICT (empresa_id, email) DO UPDATE
-      SET nome = EXCLUDED.nome, telefone = EXCLUDED.telefone, cpf = EXCLUDED.cpf
-    RETURNING id
-  `;
+  const clienteId = await garantirCliente(empresaId, cliente);
 
-  const [pedidoRow] = await sql`
-    INSERT INTO pedidos (empresa_id, cliente_id, numero, metodo, status, total, taxa_entrega, asaas_payment_id, endereco_entrega)
-    VALUES (${empresaId}, ${clienteRow.id}, ${numero}, ${metodo}, ${status}, ${total}, ${Number(taxaEntrega) || 0}, ${asaasPaymentId}, ${enderecoEntrega || null})
-    RETURNING id
-  `;
+  const { data: pedido, error } = await supabaseAdmin
+    .from('pedidos')
+    .insert({
+      empresa_id: empresaId,
+      cliente_id: clienteId,
+      numero,
+      metodo,
+      status,
+      total,
+      taxa_entrega: Number(taxaEntrega) || 0,
+      asaas_payment_id: asaasPaymentId,
+      endereco_entrega: enderecoEntrega || null,
+    })
+    .select('id')
+    .single();
 
-  for (const item of itensCalculados) {
-    await sql`
-      INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unitario)
-      VALUES (${pedidoRow.id}, ${item.produtoId}, ${item.qty}, ${item.preco})
-    `;
-  }
+  if (error) throw new Error(error.message);
 
-  return pedidoRow.id;
+  const { error: itensErr } = await supabaseAdmin.from('pedido_itens').insert(
+    itensCalculados.map((item) => ({
+      pedido_id: pedido.id,
+      produto_id: item.produtoId,
+      quantidade: item.qty,
+      preco_unitario: item.preco,
+    }))
+  );
+
+  if (itensErr) throw new Error(itensErr.message);
+  return pedido.id;
 }
 
-// Grava o pedido como pago, ou promove um pedido já criado
-// para a mesma cobrança (evita duplicar se o cliente confirmar de novo).
 export async function garantirPedidoPago(dados) {
-  const [existente] = await sql`
-    SELECT id, status FROM pedidos
-    WHERE asaas_payment_id = ${dados.asaasPaymentId}
-    LIMIT 1
-  `;
+  const { data: existente, error } = await supabaseAdmin
+    .from('pedidos')
+    .select('id, status')
+    .eq('asaas_payment_id', dados.asaasPaymentId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
   if (existente) {
     if (existente.status !== 'PAGO') {
-      await sql`UPDATE pedidos SET status = 'PAGO' WHERE id = ${existente.id}`;
+      const { error: updateErr } = await supabaseAdmin
+        .from('pedidos')
+        .update({ status: 'PAGO' })
+        .eq('id', existente.id);
+      if (updateErr) throw new Error(updateErr.message);
     }
     return existente.id;
   }
+
   return salvarPedido({ ...dados, status: 'PAGO' });
 }

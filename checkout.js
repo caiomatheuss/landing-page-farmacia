@@ -1,6 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@base44/sdk@latest/dist/index.js';
-
-const base44 = createClient({ appId: 'SEU_APP_ID_AQUI' });
+import { supabase } from './config.js';
 
 const MAX_PARCELAS = 6;
 
@@ -24,11 +22,32 @@ const state = {
 
 /* ════════════ SALVAR PEDIDO ════════════ */
 async function salvarPedido(dados) {
-  try {
-    await base44.entities.Pedido.create(dados);
-  } catch(e) {
-    console.warn('Erro ao salvar pedido:', e);
-  }
+  if (!supabase) throw new Error('Configure SUPABASE_URL e SUPABASE_ANON_KEY em config.js.');
+
+  const bruto = Array.isArray(dados.itens) ? dados.itens : JSON.parse(dados.itens || '[]');
+  const itens = bruto.map((item) => ({
+    id: item.id,
+    qty: Number(item.qty || item.quantidade || 1),
+  }));
+  const endereco = dados.endereco_entrega || [
+    dados.endereco_rua,
+    dados.endereco_numero,
+    dados.endereco_bairro,
+    dados.endereco_cidade,
+    dados.endereco_estado,
+  ].filter(Boolean).join(', ');
+
+  const { data, error } = await supabase.rpc('criar_pedido', {
+    p_itens: itens,
+    p_metodo: String(dados.metodo || dados.metodo_pagamento || 'PIX'),
+    p_endereco: endereco || null,
+    p_taxa_entrega: Number(dados.taxa_entrega || dados.taxaEntrega || 0),
+    p_numero: dados.numero || null,
+    p_asaas_payment_id: dados.asaas_id || dados.asaasPaymentId || null,
+  });
+
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 /* ════════════ CARRINHO ════════════ */
@@ -442,16 +461,22 @@ async function processarCartao(btn) {
   const data = await resp.json();
 
   if (resp.ok && data.sucesso) {
-    await salvarPedido({
-      numero: data.numero, status: 'pago', metodo_pagamento: 'cartao',
-      total: state.cartTotal, itens: JSON.stringify(state.cartItems),
-      cliente_nome: state.formData.nome, cliente_email: state.formData.email,
-      cliente_telefone: state.formData.telefone, cliente_cpf: state.formData.cpf,
-      endereco_rua: state.formData.rua, endereco_numero: state.formData.numero,
-      endereco_complemento: state.formData.complemento||'', endereco_bairro: state.formData.bairro,
-      endereco_cidade: state.formData.cidade, endereco_estado: state.formData.estado,
-      endereco_cep: state.formData.cep, asaas_id: data.asaasId,
-    });
+    try {
+      await salvarPedido({
+        numero: data.numero,
+        metodo: 'CARTAO',
+        taxa_entrega: state.formData.taxaEntrega || 0,
+        itens: state.cartItems,
+        endereco_rua: state.formData.rua,
+        endereco_numero: state.formData.numero,
+        endereco_bairro: state.formData.bairro,
+        endereco_cidade: state.formData.cidade,
+        endereco_estado: state.formData.estado,
+        asaas_id: data.asaasId,
+      });
+    } catch (e) {
+      console.warn('Pedido do cartão já fica gravado pela Netlify:', e);
+    }
     confirmarPedido('cartao', true);
   } else {
     btn.disabled = false;
