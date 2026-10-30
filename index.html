@@ -47,7 +47,9 @@
   </a>
   <ul class="nav-links">
     <!-- Área de usuário — login/logout/meus pedidos -->
-    <div id="navUserArea"></div>
+    <div id="navUserArea" data-nav-conta>
+      <a href="login.html" class="nav-btn-login">Entrar</a>
+    </div>
     <li><a href="#inicio">Início</a></li>
     <li><a href="#historia">História</a></li>
     <li><a href="#logistica">Logística</a></li>
@@ -64,6 +66,9 @@
 </header>
 
 <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-nav-conta" data-nav-conta>
+    <a href="login.html" class="nav-btn-login">Entrar</a>
+  </div>
   <a href="#inicio" onclick="closeMenu()">Início</a>
   <a href="#historia" onclick="closeMenu()">História</a>
   <a href="#logistica" onclick="closeMenu()">Logística</a>

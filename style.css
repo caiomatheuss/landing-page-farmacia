@@ -251,6 +251,43 @@ a { color: inherit; }
   text-transform: uppercase;
 }
 
+.mobile-menu [data-nav-conta] {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.aviso-entrega {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding: 0.9rem 1rem;
+  background: var(--off);
+  border: 1px solid var(--gold);
+  color: var(--navy);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.aviso-entrega[hidden] { display: none !important; }
+
+.aviso-entrega svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--gold);
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: fadeUp 0.35s var(--ease) forwards;
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: none; }
+}
+
 /* ── Hero ── */
 .hero {
   position: relative;

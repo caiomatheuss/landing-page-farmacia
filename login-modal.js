@@ -3,6 +3,7 @@
 //  Arte Pharmaceutica
 // ══════════════════════════════════════════════
 
+import { AVISO_ENTREGA } from './config.js';
 import { cadastrar, login, logout, getUsuarioAtual, onAuthStateChanged, redirecionarPorRole } from './auth.js';
 
 /* ── Requisitos de senha (edite aqui se precisar) ── */
@@ -253,7 +254,7 @@ function injetarModal() {
     }
     .auth-skip:hover { border-color: #C5A059; color: #002B5B; }
 
-    #navUserArea {
+    [data-nav-conta] {
       display: flex; align-items: center; gap: 0.75rem;
     }
     .nav-user-name {
@@ -549,28 +550,23 @@ function fecharModal() {
   }, 420);
 }
 
-function atualizarNavbar(user) {
-  const area = document.getElementById('navUserArea');
-  if (!area) return;
-
-  if (user) {
-    const nome = user.displayName || user.nome || user.email;
-    const extra = user.role === 'admin'
-      ? `<a href="admin.html" class="nav-btn-login" style="text-decoration:none">Painel</a>`
-      : `<a href="meus-pedidos.html" class="nav-btn-login" style="text-decoration:none">Meus Pedidos</a>`;
-    area.innerHTML = `
-      <span class="nav-user-name">Olá, ${String(nome).split(' ')[0]}</span>
-      ${extra}
-      <button class="nav-btn-logout" id="btnNavLogout">Sair</button>
-    `;
-    document.getElementById('btnNavLogout')?.addEventListener('click', async () => {
-      await logout();
-    });
-  } else {
-    area.innerHTML = `
-      <a href="login.html" class="nav-btn-login" style="text-decoration:none">Entrar / Cadastrar</a>
-    `;
+function htmlNavConta(user) {
+  if (!user) {
+    return `<a href="login.html" class="nav-btn-login">Entrar</a>`;
   }
+  if (user.role === 'admin') {
+    return `<a href="admin.html" class="nav-btn-login">Painel</a><button type="button" class="nav-btn-logout" data-nav-sair>Sair</button>`;
+  }
+  return `<a href="meus-pedidos.html" class="nav-btn-login">Meus pedidos</a><button type="button" class="nav-btn-logout" data-nav-sair>Sair</button>`;
+}
+
+function atualizarNavbar(user) {
+  document.querySelectorAll('[data-nav-conta]').forEach((area) => {
+    area.innerHTML = htmlNavConta(user);
+    area.querySelector('[data-nav-sair]')?.addEventListener('click', () => {
+      logout();
+    });
+  });
 }
 
 function traduzirErroAuth(err) {
@@ -597,6 +593,9 @@ async function abrirNoLoadSeNecessario() {
 // ── Init ──────────────────────────────────────
 injetarModal();
 setupModal();
+document.querySelectorAll('[data-aviso-entrega]').forEach((el) => {
+  el.textContent = AVISO_ENTREGA;
+});
 
 onAuthStateChanged((user) => {
   atualizarNavbar(user);

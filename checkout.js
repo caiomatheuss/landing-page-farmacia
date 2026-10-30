@@ -1,4 +1,4 @@
-import { supabase } from './config.js';
+import { supabase, AVISO_ENTREGA } from './config.js';
 
 const MAX_PARCELAS = 6;
 
@@ -495,6 +495,11 @@ function confirmarPedido(metodo, confirmado = false) {
   };
   const confirmText = document.getElementById('confirmText');
   if (confirmText) confirmText.textContent = msgs[metodo] || msgs.cartao;
+  document.querySelectorAll('[data-aviso-entrega]').forEach((el) => {
+    if (!el.textContent) el.textContent = AVISO_ENTREGA;
+  });
+  const avisoConfirm = document.getElementById('avisoEntregaConfirm');
+  if (avisoConfirm) avisoConfirm.hidden = metodo === 'retirada';
   goToStep(3);
 }
 

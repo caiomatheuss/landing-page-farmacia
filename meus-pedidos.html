@@ -118,6 +118,7 @@
 
     .mp-items { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
     .mp-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; color: var(--text); }
+    .mp-item span:nth-child(2) { flex: 1; }
     .mp-item-dot {
       width: 6px; height: 6px; border-radius: 50%;
       background: var(--gold); flex-shrink: 0;
@@ -145,6 +146,58 @@
     }
     .mp-footer p { font-size: 0.7rem; color: rgba(255,255,255,0.3); letter-spacing: 0.06em; }
 
+    .mp-toolbar {
+      display: flex; justify-content: flex-end; margin: -1.2rem 0 1.2rem;
+    }
+    .mp-btn--ghost {
+      background: transparent; color: var(--navy);
+      border: 1px solid rgba(0,43,91,0.18);
+    }
+    .mp-btn--ghost:hover { background: var(--white); }
+
+    .mp-totais {
+      display: flex; flex-direction: column; gap: 0.3rem;
+      margin-top: 0.4rem; font-size: 0.82rem; color: var(--text-soft);
+    }
+    .mp-totais strong { color: var(--navy); font-weight: 600; }
+    .mp-preco { margin-left: auto; color: var(--navy); font-variant-numeric: tabular-nums; }
+
+    .mp-timeline {
+      list-style: none; display: flex; flex-wrap: wrap; gap: 0.55rem 1rem;
+      margin: 1rem 0 0; padding-top: 0.9rem;
+      border-top: 1px solid rgba(0,43,91,0.06);
+    }
+    .mp-timeline li {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; color: #8a9ab0;
+    }
+    .mp-timeline li.is-on { color: var(--navy); }
+    .mp-timeline li.is-bad { color: #a33b3b; }
+    .mp-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1px solid currentColor; flex-shrink: 0;
+    }
+    .mp-timeline li.is-on .mp-dot { background: #1a7a48; border-color: #1a7a48; }
+    .mp-timeline li.is-bad .mp-dot { background: #a33b3b; border-color: #a33b3b; }
+
+    .mp-pix-nota {
+      margin-top: 0.85rem; font-size: 0.8rem; color: #8a6520; line-height: 1.5;
+    }
+    .mp-badge--preparo { background: rgba(50,150,220,0.12); color: #1a5c9a; }
+    .mp-erro { color: #8a2a2a; }
+
+    @media (max-width: 768px) {
+      .mp-card-header, .mp-card-footer { padding-left: 1rem; padding-right: 1rem; }
+      .mp-card-body { padding: 1rem; }
+      .mp-timeline { flex-direction: column; gap: 0.45rem; }
+    }
+    @media (max-width: 480px) {
+      .mp-header { flex-wrap: wrap; }
+      .mp-header-nav { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 0.75rem; }
+      .mp-card-footer { align-items: flex-start; }
+      .mp-item { align-items: flex-start; }
+    }
+
     @media (max-width: 600px) {
       .mp-card-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
     }
@@ -161,7 +214,9 @@
     <nav class="mp-header-nav">
       <a href="index.html">Início</a>
       <a href="index.html#showroom">Produtos</a>
-      <div id="navUserArea"></div>
+      <div id="navUserArea" data-nav-conta>
+        <a href="login.html" class="nav-btn-login">Entrar</a>
+      </div>
     </nav>
   </header>
 
@@ -192,105 +247,174 @@
   <script type="module" src="login-modal.js"></script>
   <script type="module">
     import { getUsuarioAtual, redirecionarPorRole } from './auth.js';
-    import { supabase } from './config.js';
+    import { supabase, AVISO_ENTREGA } from './config.js';
 
     const content = document.getElementById('mpContent');
+    let timer = null;
+    let clienteId = null;
 
     const statusMap = {
-      PENDENTE:   { label: 'Pendente',    cls: 'mp-badge--pendente' },
-      PAGO:       { label: 'Pago',        cls: 'mp-badge--pago' },
-      CONFIRMADO: { label: 'Confirmado',  cls: 'mp-badge--confirmed' },
-      PREPARANDO: { label: 'Preparando',  cls: 'mp-badge--received' },
-      ENVIADO:    { label: 'Enviado',     cls: 'mp-badge--received' },
-      ENTREGUE:   { label: 'Entregue',    cls: 'mp-badge--pago' },
-      CANCELADO:  { label: 'Cancelado',   cls: 'mp-badge--cancelado' },
+      PENDENTE:   { label: 'Aguardando pagamento', cls: 'mp-badge--pendente' },
+      PAGO:       { label: 'Pagamento confirmado ✓', cls: 'mp-badge--pago' },
+      CONFIRMADO: { label: 'Pagamento confirmado ✓', cls: 'mp-badge--pago' },
+      PREPARANDO: { label: 'Em preparo', cls: 'mp-badge--preparo' },
+      ENVIADO:    { label: 'Saiu para entrega', cls: 'mp-badge--preparo' },
+      ENTREGUE:   { label: 'Entregue', cls: 'mp-badge--pago' },
+      CANCELADO:  { label: 'Cancelado', cls: 'mp-badge--cancelado' },
     };
 
-    const metodoMap = {
-      cartao: 'Cartão de Crédito',
-      pix: 'PIX',
-      CREDIT_CARD: 'Cartão de Crédito',
-      PIX: 'PIX',
-    };
+    function esc(valor) {
+      return String(valor ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
 
-    function renderVazio() {
+    function reais(valor) {
+      return Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function ehRetirada(pedido) {
+      const metodo = String(pedido.metodo || '').toUpperCase();
+      const endereco = String(pedido.endereco_entrega || '');
+      return metodo === 'RETIRADA' || endereco.startsWith('[RETIRADA]');
+    }
+
+    function formaPagamento(pedido) {
+      const metodo = String(pedido.metodo || '').toUpperCase();
+      if (metodo === 'PIX') return 'PIX';
+      if (metodo === 'CARTAO' || metodo === 'CREDIT_CARD') return 'Cartão';
+      if (metodo === 'RETIRADA') return 'Na retirada';
+      return pedido.metodo || '—';
+    }
+
+    function selo(pedido) {
+      const base = statusMap[pedido.status] || { label: pedido.status || '—', cls: 'mp-badge--pendente' };
+      if (pedido.status === 'ENVIADO' && ehRetirada(pedido)) {
+        return { label: 'Pronto para retirada', cls: 'mp-badge--preparo' };
+      }
+      if (pedido.status === 'ENTREGUE' && ehRetirada(pedido)) {
+        return { label: 'Retirado', cls: 'mp-badge--pago' };
+      }
+      return base;
+    }
+
+    function linhaDoTempo(pedido) {
+      if (pedido.status === 'CANCELADO') {
+        return [
+          { label: 'Pedido recebido', on: true },
+          { label: 'Cancelado', on: true, bad: true },
+        ];
+      }
+      const status = pedido.status;
+      const pago = ['PAGO', 'CONFIRMADO', 'PREPARANDO', 'ENVIADO', 'ENTREGUE'].includes(status);
+      const preparo = ['PREPARANDO', 'ENVIADO', 'ENTREGUE'].includes(status);
+      const passos = [
+        { label: 'Pedido recebido', on: true },
+        { label: 'Pagamento confirmado', on: pago },
+        { label: 'Em preparo', on: preparo },
+      ];
+      if (ehRetirada(pedido)) {
+        passos.push({ label: 'Pronto para retirada', on: status === 'ENVIADO' || status === 'ENTREGUE' });
+      } else {
+        passos.push({ label: 'Saiu para entrega', on: status === 'ENVIADO' || status === 'ENTREGUE' });
+      }
+      return passos;
+    }
+
+    function avisoEntregaHtml() {
+      return `<div class="aviso-entrega">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="6" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/>
+          <path d="M4 17V8h9v9M13 11h4l3 3v3h-3"/>
+        </svg>
+        <p data-aviso-entrega></p>
+      </div>`;
+    }
+
+    function renderEstado(titulo, texto, acao) {
       content.innerHTML = `
-        <div class="mp-state">
-          <div class="mp-state-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 01-8 0"/>
-            </svg>
-          </div>
-          <div class="mp-state-title">Nenhum pedido encontrado</div>
-          <p class="mp-state-text">Você ainda não fez nenhum pedido com este e-mail.</p>
-          <a href="index.html#showroom" class="mp-btn">Ver produtos</a>
+        <div class="mp-state fade-up">
+          <div class="mp-state-title">${titulo}</div>
+          ${texto ? `<p class="mp-state-text">${texto}</p>` : ''}
+          ${acao || ''}
         </div>`;
     }
 
-    function renderNaoLogado() {
-      content.innerHTML = `
-        <div class="mp-state">
-          <div class="mp-state-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-          <div class="mp-state-title">Faça login para ver seus pedidos</div>
-          <p class="mp-state-text">Entre na sua conta para acompanhar o status das suas compras.</p>
-          <button class="mp-btn" id="btnLoginPedidos">Entrar na minha conta</button>
-        </div>`;
-      document.getElementById('btnLoginPedidos').addEventListener('click', () => {
-        window.location.href = 'login.html';
-      });
+    function renderVazio() {
+      renderEstado(
+        'Você ainda não fez nenhum pedido',
+        '',
+        '<a href="index.html#showroom" class="mp-btn">Ver produtos</a>'
+      );
     }
 
     function renderPedidos(pedidos) {
       if (!pedidos.length) { renderVazio(); return; }
 
-      const html = pedidos.map(p => {
-        const data    = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—';
-        const status  = statusMap[p.status] || { label: p.status, cls: 'mp-badge--pendente' };
-        const metodo  = metodoMap[p.metodo] || p.metodo || '—';
-        const valor   = `R$ ${Number(p.total || 0).toFixed(2).replace('.', ',')}`;
-        const itens   = (p.itens || []).map(i => `${i.nome} (x${i.quantidade})`);
-        const descr   = itens.length ? itens.map(t => `<li class="mp-item"><span class="mp-item-dot"></span>${t}</li>`).join('') : '<li class="mp-item"><span class="mp-item-dot"></span>—</li>';
+      const html = pedidos.map((pedido, indice) => {
+        const quando = pedido.created_at
+          ? new Date(pedido.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+          : '—';
+        const status = selo(pedido);
+        const retirada = ehRetirada(pedido);
+        const itens = pedido.itens || [];
+        const subtotal = itens.reduce((soma, item) => soma + item.quantidade * item.preco, 0);
+        const taxa = Number(pedido.taxa_entrega || 0);
+        const lista = itens.length
+          ? itens.map((item) => `<li class="mp-item"><span class="mp-item-dot"></span><span>${esc(item.nome)} · ${item.quantidade} × ${reais(item.preco)}</span><span class="mp-preco">${reais(item.quantidade * item.preco)}</span></li>`).join('')
+          : '<li class="mp-item"><span class="mp-item-dot"></span>—</li>';
+        const tempo = linhaDoTempo(pedido).map((passo) => `<li class="${passo.on ? 'is-on' : ''} ${passo.bad ? 'is-bad' : ''}"><span class="mp-dot"></span>${esc(passo.label)}</li>`).join('');
+        const pixPendente = !retirada && pedido.status === 'PENDENTE' && String(pedido.metodo || '').toUpperCase() === 'PIX';
+        const pixNota = pixPendente
+          ? '<p class="mp-pix-nota">O QR Code deste PIX não ficou salvo no pedido.</p>'
+          : '';
 
         return `
-          <div class="mp-card">
+          <article class="mp-card fade-up" style="animation-delay:${Math.min(indice, 6) * 0.05}s">
             <div class="mp-card-header">
               <div>
-                <div class="mp-card-num">Pedido #${p.numero || p.id}</div>
-                <div class="mp-card-date">${data}</div>
+                <div class="mp-card-num">Pedido ${esc(pedido.numero || pedido.id)}</div>
+                <div class="mp-card-date">${esc(quando)}</div>
               </div>
-              <span class="mp-badge ${status.cls}">${status.label}</span>
+              <span class="mp-badge ${status.cls}">${esc(status.label)}</span>
             </div>
             <div class="mp-card-body">
-              <ul class="mp-items">${descr}</ul>
+              <ul class="mp-items">${lista}</ul>
+              <div class="mp-totais">
+                <div>Subtotal <strong>${reais(subtotal)}</strong></div>
+                ${!retirada && taxa > 0 ? `<div>Taxa de entrega <strong>${reais(taxa)}</strong></div>` : ''}
+                <div>Total <strong>${reais(pedido.total)}</strong></div>
+              </div>
+              <ul class="mp-timeline">${tempo}</ul>
+              ${pixNota}
+              ${retirada ? '' : avisoEntregaHtml()}
             </div>
             <div class="mp-card-footer">
-              <span class="mp-metodo">${metodo}</span>
-              <div style="text-align:right">
-                <div class="mp-total-label">Total</div>
-                <div class="mp-total-val">${valor}</div>
-              </div>
+              <span class="mp-metodo">${esc(formaPagamento(pedido))} · ${retirada ? 'Retirada' : 'Entrega'}</span>
+              <div class="mp-total-val">${reais(pedido.total)}</div>
             </div>
-          </div>`;
+          </article>`;
       }).join('');
 
-      content.innerHTML = `<div class="mp-list">${html}</div>`;
+      content.innerHTML = `
+        <div class="mp-toolbar">
+          <button type="button" class="mp-btn mp-btn--ghost" id="btnAtualizarPedidos">Atualizar</button>
+        </div>
+        <div class="mp-list">${html}</div>`;
+      document.getElementById('btnAtualizarPedidos')?.addEventListener('click', () => carregar(true));
+      document.querySelectorAll('[data-aviso-entrega]').forEach((el) => {
+        el.textContent = AVISO_ENTREGA;
+      });
     }
 
-    async function carregarPedidos(clienteId) {
+    async function carregarPedidos(id) {
       const { data, error } = await supabase
         .from('pedidos')
         .select(`
-          id, numero, metodo, status, total, created_at,
-          pedido_itens (quantidade, produtos (nome))
+          id, numero, metodo, status, total, taxa_entrega, endereco_entrega, created_at,
+          pedido_itens (quantidade, preco_unitario, produtos (nome))
         `)
-        .eq('cliente_id', clienteId)
+        .eq('cliente_id', id)
         .order('created_at', { ascending: false });
       if (error) throw new Error(error.message);
       return (data || []).map((pedido) => ({
@@ -298,8 +422,36 @@
         itens: (pedido.pedido_itens || []).map((item) => ({
           nome: item.produtos?.nome || '—',
           quantidade: item.quantidade,
+          preco: Number(item.preco_unitario || 0),
         })),
       }));
+    }
+
+    function agendar(pedidos) {
+      clearInterval(timer);
+      timer = null;
+      if (!pedidos.some((pedido) => pedido.status === 'PENDENTE')) return;
+      timer = setInterval(() => carregar(false), 30000);
+    }
+
+    async function carregar(mostrarLoading) {
+      if (!clienteId) return;
+      if (mostrarLoading) {
+        renderEstado('Buscando seus pedidos…', '', '');
+      }
+      try {
+        const pedidos = await carregarPedidos(clienteId);
+        renderPedidos(pedidos);
+        agendar(pedidos);
+      } catch (err) {
+        clearInterval(timer);
+        renderEstado(
+          'Não foi possível carregar',
+          `<span class="mp-erro">${esc(err.message)}</span>`,
+          '<button type="button" class="mp-btn" id="btnTentarPedidos">Tentar de novo</button>'
+        );
+        document.getElementById('btnTentarPedidos')?.addEventListener('click', () => carregar(true));
+      }
     }
 
     const user = await getUsuarioAtual();
@@ -309,15 +461,14 @@
     } else if (user.role === 'admin') {
       redirecionarPorRole(user);
     } else if (!user.id) {
-      content.innerHTML = `<div class="mp-state"><div class="mp-state-title">Cadastro incompleto</div><p class="mp-state-text">Sua conta ainda não está ligada a um cliente. Rode o SQL do Supabase e entre de novo.</p></div>`;
+      renderEstado(
+        'Cadastro incompleto',
+        'Sua conta ainda não está ligada a um cliente. Rode o SQL do Supabase e entre de novo.',
+        ''
+      );
     } else {
-      content.innerHTML = `<div class="mp-state"><div class="mp-state-title" style="color:#8a9ab0">Buscando seus pedidos…</div></div>`;
-      try {
-        const pedidos = await carregarPedidos(user.id);
-        renderPedidos(pedidos);
-      } catch (err) {
-        content.innerHTML = `<div class="mp-state"><div class="mp-state-title">Não foi possível carregar</div><p class="mp-state-text">${err.message}</p></div>`;
-      }
+      clienteId = user.id;
+      await carregar(true);
     }
   </script>
 

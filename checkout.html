@@ -56,6 +56,14 @@
 
     .co-header-back svg { flex-shrink: 0; }
 
+    .co-header-nav {
+      min-width: 120px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     /* ── Stepper ── */
     .co-stepper {
       background: var(--navy);
@@ -1225,7 +1233,9 @@
     <a href="index.html" class="co-header-logo" aria-label="Arte Pharmaceutica">
       <img src="images/brand/logo-arte.png" alt="Arte Pharmaceutica">
     </a>
-    <div style="width:120px"></div><!-- espaçador para centralizar logo -->
+    <nav class="co-header-nav" data-nav-conta aria-label="Conta">
+      <a href="login.html" class="nav-btn-login">Entrar</a>
+    </nav>
   </header>
 
   <!-- ══════════════ STEPPER ══════════════ -->
@@ -1387,6 +1397,13 @@
               </div>
 
               <p id="entregaStatus" class="co-entrega-status" hidden></p>
+              <div class="aviso-entrega" id="avisoEntregaTaxa" hidden>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <circle cx="6" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/>
+                  <path d="M4 17V8h9v9M13 11h4l3 3v3h-3"/>
+                </svg>
+                <p data-aviso-entrega></p>
+              </div>
               <div class="co-field co-bairro-fallback" id="bairroFallback" hidden>
                 <label class="co-label" for="selectBairroManual">Bairro *</label>
                 <select class="co-input" id="selectBairroManual">
@@ -1656,6 +1673,13 @@
           <p class="co-confirm-text" id="confirmText">
             Obrigado! Em breve nossa equipe entrará em contato via WhatsApp para confirmar os detalhes do seu pedido.
           </p>
+          <div class="aviso-entrega" id="avisoEntregaConfirm" hidden>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="6" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/>
+              <path d="M4 17V8h9v9M13 11h4l3 3v3h-3"/>
+            </svg>
+            <p data-aviso-entrega></p>
+          </div>
           <a href="index.html#showroom" class="co-btn-primary" style="max-width:280px;margin:0 auto;text-decoration:none;display:inline-flex;">
             Continuar comprando
           </a>
@@ -2068,18 +2092,27 @@ function loadCart() {
       return window.ArteEntrega || null;
     }
 
+    function sincronizarAvisoEntrega(mostrar) {
+      const aviso = document.getElementById('avisoEntregaTaxa');
+      if (!aviso) return;
+      const entrega = document.querySelector('input[name="deliveryType"]:checked')?.value !== 'retirada';
+      aviso.hidden = !(mostrar && entrega);
+    }
+
     function caixaEntrega(modo, texto) {
       const box = document.getElementById('entregaStatus');
       if (!box) return;
       box.hidden = false;
       box.className = `co-entrega-status is-${modo}`;
       box.textContent = texto;
+      sincronizarAvisoEntrega(modo === 'ok');
     }
 
     function mostrarForaDeArea() {
       const box = document.getElementById('entregaStatus');
       state.taxaEntrega = null;
       state.entregaOk = false;
+      sincronizarAvisoEntrega(false);
       if (!box) return;
       const wa = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent('Olá! Meu bairro não apareceu na área de entrega. Podem me ajudar?')}`;
       box.hidden = false;
@@ -2664,6 +2697,11 @@ function confirmarPedido(metodo, opcoes) {
   };
   const confirmText = document.getElementById('confirmText');
   if (confirmText) confirmText.textContent = msgs[metodo] || msgs.cartao;
+  const avisoConfirm = document.getElementById('avisoEntregaConfirm');
+  if (avisoConfirm) {
+    const retirada = metodo === 'retirada' || state.formData?.deliveryType === 'retirada';
+    avisoConfirm.hidden = retirada;
+  }
 
   goToStep(3);
 }
@@ -2703,6 +2741,8 @@ function confirmarPedido(metodo, opcoes) {
           }
           renderSummary();
           populateParcelas();
+          const entregaAtiva = !isRetirada && state.entregaOk && state.taxaEntrega != null;
+          sincronizarAvisoEntrega(entregaAtiva);
         });
       });
     }
