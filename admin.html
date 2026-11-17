@@ -230,7 +230,7 @@
     document.getElementById('btnRefresh').addEventListener('click', carregarPedidos);
     document.getElementById('btnLogout').addEventListener('click', async () => {
       await logout();
-      window.location.replace('login.html');
+      window.location.replace('index.html');
     });
     document.querySelectorAll('.adm-filter-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
