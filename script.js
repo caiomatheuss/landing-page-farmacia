@@ -409,9 +409,85 @@ function atualizarColagem() {
   });
 }
 
+function pecaEditorial(foto) {
+  return `<figure class="editorial-peca is-${foto.orientacao}" style="--ratio:${foto.width} / ${foto.height}">
+    <button type="button" data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}" aria-label="Ampliar foto do laboratório">
+      <img src="${escHtml(foto.src)}" alt="${escHtml(foto.alt)}" width="${foto.width}" height="${foto.height}" loading="lazy" decoding="async">
+      ${tagUnidade(foto.unidade)}
+    </button>
+    ${foto.legenda ? `<figcaption>${escHtml(foto.legenda)}</figcaption>` : ''}
+  </figure>`;
+}
+
+function spreadsEditoriais(fotos) {
+  const fila = fotos.slice();
+  const spreads = [];
+  let lado = 0;
+  while (fila.length) {
+    if (fila[0].orientacao === 'v') {
+      const vertical = fila.shift();
+      const horizontais = [];
+      while (horizontais.length < 2 && fila[0]?.orientacao === 'h') horizontais.push(fila.shift());
+      if (horizontais.length) {
+        spreads.push({ tipo: 'vh', vertical, horizontais, invert: lado % 2 === 1 });
+        lado += 1;
+      } else if (fila[0]?.orientacao === 'v') {
+        spreads.push({ tipo: 'vv', fotos: [vertical, fila.shift()] });
+      } else {
+        spreads.push({ tipo: 'solo-v', foto: vertical });
+      }
+    } else if (fila[1]?.orientacao === 'v') {
+      const primeira = fila.shift();
+      const vertical = fila.shift();
+      const horizontais = [primeira];
+      if (fila[0]?.orientacao === 'h') horizontais.push(fila.shift());
+      spreads.push({ tipo: 'vh', vertical, horizontais, invert: true });
+      lado += 1;
+    } else if (fila[1]?.orientacao === 'h') {
+      spreads.push({ tipo: 'hh', fotos: [fila.shift(), fila.shift()] });
+    } else {
+      spreads.push({ tipo: 'solo-h', foto: fila.shift() });
+    }
+  }
+  return spreads;
+}
+
+function htmlSpread(spread) {
+  if (spread.tipo === 'vh') {
+    const klass = spread.invert
+      ? 'editorial-spread editorial-spread--vh is-invert'
+      : 'editorial-spread editorial-spread--vh';
+    return `<div class="${klass}">${pecaEditorial(spread.vertical)}<div class="editorial-stack">${spread.horizontais.map(pecaEditorial).join('')}</div></div>`;
+  }
+  if (spread.tipo === 'vv') {
+    return `<div class="editorial-spread editorial-spread--vv">${spread.fotos.map(pecaEditorial).join('')}</div>`;
+  }
+  if (spread.tipo === 'hh') {
+    return `<div class="editorial-spread editorial-spread--hh">${spread.fotos.map(pecaEditorial).join('')}</div>`;
+  }
+  if (spread.tipo === 'solo-v') {
+    return `<div class="editorial-spread editorial-spread--solo-v">${pecaEditorial(spread.foto)}</div>`;
+  }
+  return `<div class="editorial-spread editorial-spread--solo-h">${pecaEditorial(spread.foto)}</div>`;
+}
+
+function montarEditorial(secaoNome) {
+  const raiz = document.querySelector(`[data-mount="editorial"][data-secao="${secaoNome}"]`);
+  if (!raiz) return;
+  const fotos = fotosDa(secaoNome);
+  const secao = raiz.closest('section');
+  if (!fotos.length) {
+    if (secao) secao.hidden = true;
+    return;
+  }
+  raiz.innerHTML = spreadsEditoriais(fotos).map(htmlSpread).join('');
+  if (secao) mostrarSecao(secao);
+}
+
 function initGaleria() {
   montarFachadas();
   document.querySelectorAll('.gal-carousel[data-secao]').forEach(montarCarrossel);
+  montarEditorial('lab');
   montarFormula();
   montarGrade('produtos');
   atualizarColagem();
@@ -574,7 +650,7 @@ function initLightbox() {
 
   document.querySelectorAll('[data-lightbox]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const raiz = btn.closest('[data-carousel], [data-mount="formula"], [data-mount="retratos"], .galeria-grid, .fachadas-grid, .servicos-gallery') || btn.parentElement;
+      const raiz = btn.closest('[data-carousel], [data-mount="editorial"], [data-mount="formula"], [data-mount="retratos"], .galeria-grid, .fachadas-grid, .servicos-gallery') || btn.parentElement;
       const nodes = [...raiz.querySelectorAll('[data-lightbox]')];
       const lista = nodes.length ? nodes : [btn];
       abrir(lista, Math.max(0, lista.indexOf(btn)));

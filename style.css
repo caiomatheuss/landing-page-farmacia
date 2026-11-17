@@ -2835,6 +2835,108 @@ body.modal-open { overflow: hidden; }
   border-top: 1px solid rgba(197, 160, 89, 0.35);
 }
 
+.editorial {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.7rem, 1.4vw, 1.1rem);
+  margin-top: 1.75rem;
+}
+
+.editorial-spread {
+  display: grid;
+  gap: inherit;
+  align-items: start;
+}
+
+.editorial-spread--vh {
+  grid-template-columns: minmax(0, 9fr) minmax(0, 8fr);
+}
+
+.editorial-spread--vh.is-invert {
+  grid-template-columns: minmax(0, 8fr) minmax(0, 9fr);
+}
+
+.editorial-spread--vh.is-invert .editorial-peca.is-v {
+  order: 2;
+}
+
+.editorial-spread--vv {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  justify-items: center;
+}
+
+.editorial-spread--vv .editorial-peca {
+  width: min(100%, 420px);
+}
+
+.editorial-spread--hh {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.editorial-spread--solo-v {
+  justify-items: center;
+}
+
+.editorial-spread--solo-v .editorial-peca {
+  width: min(100%, 460px);
+}
+
+.editorial-stack {
+  display: grid;
+  gap: inherit;
+  align-content: start;
+}
+
+.editorial-peca {
+  margin: 0;
+  min-width: 0;
+}
+
+.editorial-peca button {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: #0d2545;
+  cursor: pointer;
+  overflow: hidden;
+  aspect-ratio: var(--ratio);
+}
+
+.editorial-peca img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.editorial-peca figcaption {
+  margin-top: 0.45rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: #3d4d63;
+}
+
+@media (max-width: 760px) {
+  .editorial-spread--vh,
+  .editorial-spread--vh.is-invert,
+  .editorial-spread--vv,
+  .editorial-spread--hh {
+    grid-template-columns: 1fr;
+  }
+
+  .editorial-spread--vh.is-invert .editorial-peca.is-v {
+    order: 0;
+  }
+
+  .editorial-spread--vv .editorial-peca,
+  .editorial-spread--solo-v .editorial-peca {
+    width: min(100%, 520px);
+    justify-self: center;
+  }
+}
+
 .gal-frame {
   aspect-ratio: 16 / 9;
   overflow: hidden;
