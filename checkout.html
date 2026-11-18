@@ -1609,7 +1609,7 @@
 
               <div id="pixQrBox" class="co-pix-state">
                 <div class="co-pix-qr">
-                  <img id="pixQrImg" src="" alt="QR Code PIX">
+                  <img id="pixQrImg" src="images/pix/qr_code_teste.png" alt="QR Code PIX">
                 </div>
                 <p class="co-pix-expira" id="pixExpira" hidden></p>
                 <div class="co-pix-key-box">
@@ -2315,8 +2315,10 @@ function loadCart() {
         mostrarPix('');
         return;
       }
-      if (state.payMethod === 'pix') gerarCobrancaPix(false);
-      else pararPolling();
+      if (state.payMethod === 'pix') {
+        aplicarQrLocal();
+        gerarCobrancaPix(false);
+      } else pararPolling();
     }
 
     function atualizarBotaoFinalizar() {
@@ -2389,10 +2391,20 @@ function assinaturaPedido() {
   });
 }
 
+function aplicarQrLocal() {
+  const img = document.getElementById('pixQrImg');
+  const chave = document.getElementById('pixKeyDisplay');
+  if (img) img.src = 'images/pix/qr_code_teste.png';
+  state.pixPayload = CHAVE_PIX;
+  if (chave) chave.textContent = CHAVE_PIX;
+  mostrarPix('local');
+}
+
 function mostrarPix(modo) {
   const mapa = {
     loading: ['pixLoading'],
     erro: ['pixErro'],
+    local: ['pixQrBox'],
     pronto: ['pixQrBox', 'pollingBox'],
     confirmado: ['pollingConfirmed'],
     expirado: ['pixExpirado'],
@@ -2524,11 +2536,10 @@ async function gerarCobrancaPix(forcar) {
   pararPolling();
   pararTimerPix();
   state.asaasId = null;
-  state.pixPayload = '';
   state.pixNumero = null;
   state.pixExpiraEm = null;
   state.pixGerando = true;
-  mostrarPix('loading');
+  aplicarQrLocal();
 
   try {
     const resp = await fetch('/.netlify/functions/gerar-pix', {
@@ -2545,7 +2556,7 @@ async function gerarCobrancaPix(forcar) {
     const payload = data.payload || data.pixCopiaCola;
 
     if (!resp.ok || !data.asaasId || !imagem || !payload) {
-      mostrarErroPix(data.erro || 'Não foi possível gerar o PIX. Tente novamente.');
+      aplicarQrLocal();
       return;
     }
 
@@ -2568,7 +2579,7 @@ async function gerarCobrancaPix(forcar) {
     mostrarPix('pronto');
     iniciarPolling(data.asaasId);
   } catch (err) {
-    mostrarErroPix('Não foi possível falar com o servidor. Verifique sua internet e tente novamente.');
+    aplicarQrLocal();
   } finally {
     state.pixGerando = false;
   }

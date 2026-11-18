@@ -220,6 +220,127 @@ window.GALERIA = [
     "ordem": 3
   },
   {
+    "src": "images/galeria/lab-geral-h-01.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 1
+  },
+  {
+    "src": "images/galeria/lab-geral-v-01.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "v",
+    "width": 1200,
+    "height": 1600,
+    "ordem": 1
+  },
+  {
+    "src": "images/galeria/lab-geral-h-02.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 2
+  },
+  {
+    "src": "images/galeria/lab-geral-v-02.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "v",
+    "width": 1200,
+    "height": 1600,
+    "ordem": 2
+  },
+  {
+    "src": "images/galeria/lab-geral-h-03.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 3
+  },
+  {
+    "src": "images/galeria/lab-geral-v-03.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "v",
+    "width": 1200,
+    "height": 1600,
+    "ordem": 3
+  },
+  {
+    "src": "images/galeria/lab-geral-h-04.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 4
+  },
+  {
+    "src": "images/galeria/lab-geral-h-05.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 5
+  },
+  {
+    "src": "images/galeria/lab-geral-h-06.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 6
+  },
+  {
+    "src": "images/galeria/lab-geral-h-07.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 7
+  },
+  {
+    "src": "images/galeria/lab-geral-h-08.jpg",
+    "alt": "Laboratório — Arte Pharmaceutica",
+    "legenda": "",
+    "secao": "lab",
+    "unidade": "geral",
+    "orientacao": "h",
+    "width": 1600,
+    "height": 1200,
+    "ordem": 8
+  },
+  {
     "src": "images/galeria/lab-matriz-h-01.jpg",
     "alt": "Laboratório da Matriz — Arte Pharmaceutica",
     "legenda": "Salas de hormônios e de antibióticos.",

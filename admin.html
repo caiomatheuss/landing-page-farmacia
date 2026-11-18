@@ -228,8 +228,9 @@
     }
 
     document.getElementById('btnRefresh').addEventListener('click', carregarPedidos);
-    document.getElementById('btnVoltarSite').addEventListener('click', () => {
-      window.location.href = 'index.html';
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await logout();
+      window.location.replace('index.html');
     });
     document.querySelectorAll('.adm-filter-btn').forEach((btn) => {
       btn.addEventListener('click', () => {

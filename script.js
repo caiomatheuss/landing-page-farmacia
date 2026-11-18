@@ -409,191 +409,79 @@ function atualizarColagem() {
   });
 }
 
-function botaoFoto(foto, classe, rotulo, comTag = true, troca = false) {
-  const acao = troca
-    ? `data-troca data-caption="${escHtml(foto.legenda || foto.alt)}"`
-    : `data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}"`;
-  return `<button type="button" class="${classe}" ${acao} aria-label="${escHtml(rotulo)}">
+function pecaEditorial(foto) {
+  return `<figure class="editorial-peca is-${foto.orientacao}" style="--ratio:${foto.width} / ${foto.height}">
+    <button type="button" data-lightbox="${escHtml(foto.src)}" data-caption="${escHtml(foto.legenda || foto.alt)}" aria-label="Ampliar foto do laboratório">
       <img src="${escHtml(foto.src)}" alt="${escHtml(foto.alt)}" width="${foto.width}" height="${foto.height}" loading="lazy" decoding="async">
-      ${comTag ? tagUnidade(foto.unidade) : ''}
-    </button>`;
+      ${tagUnidade(foto.unidade)}
+    </button>
+    ${foto.legenda ? `<figcaption>${escHtml(foto.legenda)}</figcaption>` : ''}
+  </figure>`;
 }
 
-function nomeUnidade(unidade) {
-  if (unidade === 'filial') return 'Filial';
-  if (unidade === 'matriz') return 'Matriz';
-  return 'Casa';
-}
-
-function parHtml(item, indice) {
-  const nome = nomeUnidade(item.unidade);
-  const numero = String(indice + 1).padStart(2, '0');
-  const foto = item.foto;
-  const legenda = foto.legenda ? `<p class="album-legenda">${escHtml(foto.legenda)}</p>` : '';
-  return `<article class="album-casa">
-    <figure>${botaoFoto(foto, 'album-foto', `Ampliar foto da ${nome}`)}</figure>
-    <p class="album-meta"><span>${numero}</span> ${nome}</p>
-    ${legenda}
-  </article>`;
-}
-
-function cartasPilha(lista, nome) {
-  const poses = lista.length === 1
-    ? [{ x: 18, y: 8, r: 0 }]
-    : lista.length === 2
-      ? [{ x: 0, y: 12, r: -7 }, { x: 32, y: 0, r: 6 }]
-      : [{ x: 0, y: 10, r: -8 }, { x: 34, y: 0, r: 7 }, { x: 14, y: 18, r: -2 }];
-  return lista.map((foto, i) => {
-    const pose = poses[i];
-    return `<figure class="pilha-carta" style="--r:${pose.r}deg;--x:${pose.x}%;--y:${pose.y}%;z-index:${i + 1}">
-      ${botaoFoto(foto, 'pilha-foto', `Ampliar foto da ${nome}`)}
-    </figure>`;
-  }).join('');
-}
-
-function pilhaHtml(grupo) {
-  const nome = nomeUnidade(grupo.unidade);
-  const fatias = [];
-  for (let i = 0; i < grupo.lista.length; i += 3) fatias.push(grupo.lista.slice(i, i + 3));
-  const blocos = fatias.map((lista) => `<div class="pilha">${cartasPilha(lista, nome)}</div>`).join('');
-  const texto = grupo.lista[0].legenda ? `<p>${escHtml(grupo.lista[0].legenda)}</p>` : '';
-  return `<div class="pilha-bloco">
-    ${blocos}
-    <p class="pilha-meta">${nome}</p>
-    ${texto}
-  </div>`;
-}
-
-function montarAmbiente() {
-  const secao = document.getElementById('espaco');
-  const par = secao?.querySelector('[data-mount="par"]');
-  const pilhas = secao?.querySelector('[data-mount="pilhas"]');
-  if (!secao || !par || !pilhas) return;
-  const fotos = fotosDa('ambiente');
-  if (!fotos.length) {
-    secao.hidden = true;
-    return;
-  }
-  const usadas = new Set();
-  const destaques = ['matriz', 'filial'].map((unidade) => {
-    const daCasa = fotos.filter((foto) => foto.unidade === unidade);
-    const foto = daCasa.find((item) => item.orientacao === 'h') || daCasa[0];
-    if (!foto) return null;
-    usadas.add(foto.src);
-    return { unidade, foto };
-  }).filter(Boolean);
-
-  par.hidden = !destaques.length;
-  par.innerHTML = destaques.map((item, i) => parHtml(item, i)).join('');
-
-  const grupos = ['matriz', 'filial'].map((unidade) => {
-    const lista = fotos.filter((foto) => foto.unidade === unidade && !usadas.has(foto.src));
-    return lista.length ? { unidade, lista } : null;
-  }).filter(Boolean);
-  const outras = fotos.filter((foto) => !usadas.has(foto.src) && foto.unidade !== 'matriz' && foto.unidade !== 'filial');
-  if (outras.length) grupos.push({ unidade: 'geral', lista: outras });
-
-  pilhas.hidden = !grupos.length;
-  pilhas.innerHTML = grupos.map((grupo) => pilhaHtml(grupo)).join('');
-  mostrarSecao(secao);
-}
-
-function colunaLab(lista) {
-  const hero = lista.find((foto) => foto.orientacao === 'h') || lista[0];
-  return { hero, thumbs: lista.filter((foto) => foto !== hero) };
-}
-
-function saborHtml(coluna) {
-  const nome = nomeUnidade(coluna.hero.unidade);
-  const legenda = coluna.hero.legenda ? `<p class="sabor-legenda">${escHtml(coluna.hero.legenda)}</p>` : '';
-  const thumbs = coluna.thumbs.length
-    ? `<div class="sabor-thumbs">${coluna.thumbs.map((foto) => botaoFoto(foto, 'sabor-thumb', 'Colocar esta foto em destaque', false, true)).join('')}</div>`
-    : '';
-  return `<article class="sabor">
-    <figure class="sabor-hero">${botaoFoto(coluna.hero, 'album-foto', `Ampliar foto do laboratório, ${nome}`)}</figure>
-    ${thumbs}
-    <p class="sabor-meta">${nome}</p>
-    ${legenda}
-  </article>`;
-}
-
-function montarLaboratorio() {
-  const root = document.querySelector('[data-mount="sabores"]');
-  const secao = document.getElementById('laboratorio');
-  if (!root || !secao) return;
-  const fotos = fotosDa('lab');
-  if (!fotos.length) {
-    secao.hidden = true;
-    return;
-  }
-  const porUnidade = { matriz: [], filial: [] };
-  fotos.forEach((foto) => {
-    const chave = foto.unidade === 'filial' ? 'filial' : 'matriz';
-    porUnidade[chave].push(foto);
-  });
-  const chaves = ['matriz', 'filial'].filter((chave) => porUnidade[chave].length);
-  let colunas;
-  if (chaves.length >= 2) {
-    colunas = chaves.map((chave) => colunaLab(porUnidade[chave]));
-  } else {
-    const lista = porUnidade[chaves[0]] || fotos;
-    const horizontais = lista.filter((foto) => foto.orientacao === 'h');
-    const resto = lista.filter((foto) => foto.orientacao !== 'h');
-    if (horizontais.length >= 2) {
-      const meio = Math.ceil(resto.length / 2);
-      colunas = [
-        { hero: horizontais[0], thumbs: resto.slice(0, meio) },
-        { hero: horizontais[1], thumbs: resto.slice(meio).concat(horizontais.slice(2)) },
-      ];
+function spreadsEditoriais(fotos) {
+  const fila = fotos.slice();
+  const spreads = [];
+  let lado = 0;
+  while (fila.length) {
+    if (fila[0].orientacao === 'v') {
+      const vertical = fila.shift();
+      const horizontais = [];
+      while (horizontais.length < 2 && fila[0]?.orientacao === 'h') horizontais.push(fila.shift());
+      if (horizontais.length) {
+        spreads.push({ tipo: 'vh', vertical, horizontais, invert: lado % 2 === 1 });
+        lado += 1;
+      } else if (fila[0]?.orientacao === 'v') {
+        spreads.push({ tipo: 'vv', fotos: [vertical, fila.shift()] });
+      } else {
+        spreads.push({ tipo: 'solo-v', foto: vertical });
+      }
+    } else if (fila[1]?.orientacao === 'v') {
+      const primeira = fila.shift();
+      const vertical = fila.shift();
+      const horizontais = [primeira];
+      if (fila[0]?.orientacao === 'h') horizontais.push(fila.shift());
+      spreads.push({ tipo: 'vh', vertical, horizontais, invert: true });
+      lado += 1;
+    } else if (fila[1]?.orientacao === 'h') {
+      spreads.push({ tipo: 'hh', fotos: [fila.shift(), fila.shift()] });
     } else {
-      colunas = [colunaLab(lista)];
+      spreads.push({ tipo: 'solo-h', foto: fila.shift() });
     }
   }
-  root.innerHTML = colunas.map((coluna) => saborHtml(coluna)).join('');
-  mostrarSecao(secao);
+  return spreads;
 }
 
-function lerBotaoFoto(btn) {
-  const img = btn.querySelector('img');
-  return {
-    src: img?.getAttribute('src') || '',
-    alt: img?.getAttribute('alt') || '',
-    width: img?.getAttribute('width') || '',
-    height: img?.getAttribute('height') || '',
-    caption: btn.dataset.caption || img?.getAttribute('alt') || '',
-  };
+function htmlSpread(spread) {
+  if (spread.tipo === 'vh') {
+    const klass = spread.invert
+      ? 'editorial-spread editorial-spread--vh is-invert'
+      : 'editorial-spread editorial-spread--vh';
+    return `<div class="${klass}">${pecaEditorial(spread.vertical)}<div class="editorial-stack">${spread.horizontais.map(pecaEditorial).join('')}</div></div>`;
+  }
+  if (spread.tipo === 'vv') {
+    return `<div class="editorial-spread editorial-spread--vv">${spread.fotos.map(pecaEditorial).join('')}</div>`;
+  }
+  if (spread.tipo === 'hh') {
+    return `<div class="editorial-spread editorial-spread--hh">${spread.fotos.map(pecaEditorial).join('')}</div>`;
+  }
+  if (spread.tipo === 'solo-v') {
+    return `<div class="editorial-spread editorial-spread--solo-v">${pecaEditorial(spread.foto)}</div>`;
+  }
+  return `<div class="editorial-spread editorial-spread--solo-h">${pecaEditorial(spread.foto)}</div>`;
 }
 
-function escreverBotaoFoto(btn, foto, destaque) {
-  const img = btn.querySelector('img');
-  if (!img) return;
-  img.src = foto.src;
-  img.alt = foto.alt;
-  if (foto.width) img.setAttribute('width', foto.width);
-  if (foto.height) img.setAttribute('height', foto.height);
-  btn.dataset.caption = foto.caption;
-  if (destaque) btn.dataset.lightbox = foto.src;
-  btn.setAttribute('aria-label', destaque ? 'Ampliar foto do laboratório' : 'Colocar esta foto em destaque');
-}
-
-function ligarTrocaLaboratorio() {
-  const root = document.querySelector('[data-mount="sabores"]');
-  if (!root) return;
-  root.addEventListener('click', (event) => {
-    const thumb = event.target.closest('[data-troca]');
-    if (!thumb || !root.contains(thumb)) return;
-    const artigo = thumb.closest('.sabor');
-    const hero = artigo?.querySelector('.album-foto');
-    const faixa = artigo?.querySelector('.sabor-thumbs');
-    if (!hero || !faixa) return;
-    const atual = lerBotaoFoto(hero);
-    const proxima = lerBotaoFoto(thumb);
-    escreverBotaoFoto(hero, proxima, true);
-    escreverBotaoFoto(thumb, atual, false);
-    faixa.appendChild(thumb);
-    const legenda = artigo.querySelector('.sabor-legenda');
-    if (legenda) legenda.textContent = proxima.caption;
-  });
+function montarEditorial(secaoNome) {
+  const raiz = document.querySelector(`[data-mount="editorial"][data-secao="${secaoNome}"]`);
+  if (!raiz) return;
+  const fotos = fotosDa(secaoNome);
+  const secao = raiz.closest('section');
+  if (!fotos.length) {
+    if (secao) secao.hidden = true;
+    return;
+  }
+  raiz.innerHTML = spreadsEditoriais(fotos).map(htmlSpread).join('');
+  if (secao) mostrarSecao(secao);
 }
 
 function initGaleria() {
@@ -602,6 +490,7 @@ function initGaleria() {
   montarLaboratorio();
   ligarTrocaLaboratorio();
   document.querySelectorAll('.gal-carousel[data-secao]').forEach(montarCarrossel);
+  montarEditorial('lab');
   montarFormula();
   montarGrade('produtos');
   atualizarColagem();
@@ -764,7 +653,7 @@ function initLightbox() {
 
   document.querySelectorAll('[data-lightbox]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const raiz = btn.closest('[data-carousel], [data-mount="formula"], [data-mount="par"], [data-mount="pilhas"], [data-mount="sabores"], .galeria-grid, .fachadas-grid, .servicos-gallery') || btn.parentElement;
+      const raiz = btn.closest('[data-carousel], [data-mount="editorial"], [data-mount="formula"], [data-mount="retratos"], .galeria-grid, .fachadas-grid, .servicos-gallery') || btn.parentElement;
       const nodes = [...raiz.querySelectorAll('[data-lightbox]')];
       const lista = nodes.length ? nodes : [btn];
       abrir(lista, Math.max(0, lista.indexOf(btn)));
