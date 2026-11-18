@@ -33,7 +33,7 @@
         <div class="adm-header-title">Painel de Pedidos</div>
         <div class="adm-header-sub">Arte Pharmaceutica — Administrativo</div>
       </div>
-      <button class="adm-logout" id="btnLogout" type="button">Sair</button>
+      <button class="adm-logout" id="btnVoltarSite" type="button">Voltar ao site</button>
     </header>
 
     <main class="adm-main">
@@ -91,7 +91,7 @@
   </div>
 
   <script type="module">
-    import { exigirRole, logout } from './auth.js';
+    import { exigirRole } from './auth.js';
     import { supabase } from './config.js';
 
     const user = await exigirRole('admin');
@@ -228,9 +228,8 @@
     }
 
     document.getElementById('btnRefresh').addEventListener('click', carregarPedidos);
-    document.getElementById('btnLogout').addEventListener('click', async () => {
-      await logout();
-      window.location.replace('login.html');
+    document.getElementById('btnVoltarSite').addEventListener('click', () => {
+      window.location.href = 'index.html';
     });
     document.querySelectorAll('.adm-filter-btn').forEach((btn) => {
       btn.addEventListener('click', () => {

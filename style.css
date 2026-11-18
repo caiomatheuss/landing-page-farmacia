@@ -2117,13 +2117,16 @@ body.modal-open { overflow: hidden; }
 .fachada figure {
   margin: 0 0 1.15rem;
   overflow: hidden;
-  background: var(--navy);
+  background: var(--off);
 }
 
 .fachada img {
   width: 100%;
-  aspect-ratio: 16 / 10;
+  height: 100%;
+  aspect-ratio: auto;
   object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .fachada h3 {
@@ -2779,20 +2782,22 @@ body.modal-open { overflow: hidden; }
 /* ── Galerias (fachada, ambiente, fórmula, laboratório, produtos) ── */
 .gal-tag {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
+  top: 0.85rem;
+  left: 0.85rem;
   z-index: 2;
-  padding: 0.35rem 0.6rem;
-  background: rgba(13, 37, 69, 0.85);
-  border: 1px solid #b8922a;
-  color: #fff;
+  padding: 0.4rem 0.75rem;
+  background: var(--off);
+  border: 0;
+  border-radius: 999px;
+  color: var(--navy);
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   line-height: 1;
   pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 43, 91, 0.16);
 }
 
 .fachada-foto,
@@ -2813,15 +2818,166 @@ body.modal-open { overflow: hidden; }
 
 .fachada figure { position: relative; }
 
+.fachada-foto {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--off);
+}
+
 .fachada-foto img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  max-width: none;
   aspect-ratio: auto;
-  object-fit: contain;
-  background: #0d2545;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .fachada .link-gold { display: inline-block; margin-top: 0.65rem; }
+
+.album-par,
+.album-sabores,
+.album-pilhas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.35rem, 3.5vw, 2.75rem);
+  align-items: start;
+}
+
+.album-par[hidden],
+.album-pilhas[hidden] { display: none !important; }
+
+.album-casa figure,
+.sabor-hero { margin: 0; }
+
+.album-foto {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--off);
+  cursor: pointer;
+}
+
+.album-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.album-meta,
+.sabor-meta,
+.pilha-meta {
+  margin: 0.95rem 0 0.3rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+
+.album-meta span {
+  color: var(--gold);
+  margin-right: 0.45rem;
+}
+
+.album-legenda,
+.sabor-legenda,
+.pilha-bloco > p {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  font-weight: 300;
+  color: var(--text-soft);
+}
+
+.album-pilhas { margin-top: clamp(3rem, 6vw, 4.75rem); }
+
+.pilha-bloco { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.pilha {
+  position: relative;
+  height: clamp(500px, 50vw, 580px);
+}
+
+.pilha-carta {
+  position: absolute;
+  width: min(64%, 290px);
+  left: var(--x);
+  top: var(--y);
+  margin: 0;
+  transform: rotate(var(--r));
+  transition: transform 0.35s var(--ease);
+}
+
+.pilha-carta:hover,
+.pilha-carta:focus-within {
+  z-index: 8;
+  transform: rotate(0deg) translateY(-8px);
+}
+
+.pilha-foto {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.45rem 0.85rem;
+  border: 0;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(0, 43, 91, 0.14);
+  cursor: pointer;
+}
+
+.pilha-foto img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.sabor-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.sabor-thumb {
+  position: relative;
+  flex: 0 0 76px;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: var(--off);
+  cursor: pointer;
+}
+
+.sabor-thumb img,
+.sabor-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.35s var(--ease);
+}
+
+.sabor-thumb .gal-tag {
+  top: 0.3rem;
+  left: 0.3rem;
+  padding: 0.22rem 0.4rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+}
 
 .espaco-controls[hidden] { display: none !important; }
 
@@ -3058,7 +3214,13 @@ body.modal-open { overflow: hidden; }
 .certificacoes .wrap { position: relative; z-index: 1; }
 
 @media (max-width: 768px) {
-  .fachadas-grid { grid-template-columns: 1fr; }
+  .fachadas-grid,
+  .album-par,
+  .album-sabores,
+  .album-pilhas { grid-template-columns: 1fr; }
+
+  .pilha { height: 480px; }
+  .pilha-carta { width: min(64%, 240px); }
 }
 
 @media (max-width: 480px) {
