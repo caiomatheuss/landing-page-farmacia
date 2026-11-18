@@ -392,14 +392,8 @@ function setupModal() {
     if (e.key === 'Escape') fecharModal();
   });
 
-  document.getElementById('btnSkipLogin').addEventListener('click', () => {
-    sessionStorage.setItem('auth-modal-skipped', '1');
-    fecharModal();
-  });
-  document.getElementById('btnSkipCadastro').addEventListener('click', () => {
-    sessionStorage.setItem('auth-modal-skipped', '1');
-    fecharModal();
-  });
+  document.getElementById('btnSkipLogin').addEventListener('click', fecharModal);
+  document.getElementById('btnSkipCadastro').addEventListener('click', fecharModal);
 
   document.getElementById('loginSenha').addEventListener('input', (e) => {
     atualizarChecklist(e.target.value, 'loginReqs');
@@ -582,7 +576,6 @@ async function abrirNoLoadSeNecessario() {
     location.pathname.endsWith('/landing-page-farmacia');
 
   if (!isHome) return;
-  if (sessionStorage.getItem('auth-modal-skipped') === '1') return;
 
   const user = await getUsuarioAtual();
   if (!user) {
@@ -600,5 +593,7 @@ document.querySelectorAll('[data-aviso-entrega]').forEach((el) => {
 onAuthStateChanged((user) => {
   atualizarNavbar(user);
 });
+
+abrirNoLoadSeNecessario();
 
 export { getUsuarioAtual };

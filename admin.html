@@ -94,14 +94,27 @@
     import { exigirRole } from './auth.js';
     import { supabase } from './config.js';
 
+    let todosPedidos = [];
+    let filtroAtual = 'TODOS';
+
+    document.getElementById('btnRefresh')?.addEventListener('click', () => carregarPedidos());
+    document.getElementById('btnVoltarSite')?.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+    document.querySelectorAll('.adm-filter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.adm-filter-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroAtual = btn.dataset.filter;
+        renderizarTabela();
+      });
+    });
+
     const user = await exigirRole('admin');
     if (!user) return;
 
     const STATUS = ['PENDENTE', 'PAGO', 'CONFIRMADO', 'PREPARANDO', 'ENVIADO', 'ENTREGUE', 'CANCELADO'];
     const pagosSet = new Set(['PAGO', 'CONFIRMADO', 'RECEIVED', 'CONFIRMED']);
-
-    let todosPedidos = [];
-    let filtroAtual = 'TODOS';
 
     function fmtMoney(n) {
       return `R$ ${Number(n || 0).toFixed(2).replace('.', ',')}`;
@@ -188,21 +201,68 @@
       });
     }
 
+    function mostrarFalha(mensagem) {
+      document.getElementById('loadingMsg').style.display = 'none';
+      document.getElementById('tabelaPedidos').style.display = 'none';
+      const empty = document.getElementById('emptyMsg');
+      empty.textContent = mensagem;
+      empty.style.display = 'block';
+    }
+
+    function comTempo(promise, ms, mensagem) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(mensagem)), ms);
+        }),
+      ]);
+    }
+
     async function carregarPedidos() {
       document.getElementById('loadingMsg').style.display = 'block';
       document.getElementById('tabelaPedidos').style.display = 'none';
       document.getElementById('emptyMsg').style.display = 'none';
       try {
-        const { data, error } = await supabase
-          .from('pedidos')
-          .select(`
-            id, numero, metodo, status, total, taxa_entrega, endereco_entrega, created_at,
-            clientes (nome, email, telefone, cpf),
-            pedido_itens (quantidade, preco_unitario, produtos (nome))
-          `)
-          .order('created_at', { ascending: false });
-        if (error) throw new Error(error.message);
-        todosPedidos = (data || []).map((pedido) => ({
+        const pedidosResp = await comTempo(
+          supabase
+            .from('pedidos')
+            .select('id, numero, metodo, status, total, taxa_entrega, endereco_entrega, created_at, cliente_id')
+            .order('created_at', { ascending: false }),
+          15000,
+          'A lista de pedidos não respondeu. Clique em Atualizar.'
+        );
+        if (pedidosResp.error) throw new Error(pedidosResp.error.message);
+
+        const pedidos = pedidosResp.data || [];
+        const clienteIds = [...new Set(pedidos.map((pedido) => pedido.cliente_id).filter(Boolean))];
+        const pedidoIds = pedidos.map((pedido) => pedido.id);
+
+        let clientesResp = { data: [] };
+        let itensResp = { data: [], error: null };
+        try {
+          [clientesResp, itensResp] = await comTempo(Promise.all([
+            clienteIds.length
+              ? supabase.from('clientes').select('id, nome, email, telefone, cpf').in('id', clienteIds)
+              : Promise.resolve({ data: [], error: null }),
+            pedidoIds.length
+              ? supabase.from('pedido_itens').select('pedido_id, quantidade, produtos (nome)').in('pedido_id', pedidoIds)
+              : Promise.resolve({ data: [], error: null }),
+          ]), 10000, 'detalhes');
+        } catch {
+          clientesResp = { data: [] };
+          itensResp = { data: [], error: true };
+        }
+
+        const clientes = new Map((clientesResp.data || []).map((cliente) => [cliente.id, cliente]));
+        const itensPorPedido = new Map();
+        (itensResp.error ? [] : (itensResp.data || [])).forEach((item) => {
+          const lista = itensPorPedido.get(item.pedido_id) || [];
+          const produto = Array.isArray(item.produtos) ? item.produtos[0] : item.produtos;
+          lista.push({ nome: produto?.nome || '—', quantidade: item.quantidade });
+          itensPorPedido.set(item.pedido_id, lista);
+        });
+
+        todosPedidos = pedidos.map((pedido) => ({
           id: pedido.id,
           numero: pedido.numero,
           metodo: pedido.metodo,
@@ -211,34 +271,17 @@
           taxa_entrega: Number(pedido.taxa_entrega || 0),
           endereco_entrega: pedido.endereco_entrega,
           created_at: pedido.created_at,
-          cliente: Array.isArray(pedido.clientes) ? (pedido.clientes[0] || {}) : (pedido.clientes || {}),
-          itens: (pedido.pedido_itens || []).map((item) => ({
-            nome: item.produtos?.nome || '—',
-            quantidade: item.quantidade,
-          })),
+          cliente: clientes.get(pedido.cliente_id) || {},
+          itens: itensPorPedido.get(pedido.id) || [],
         }));
         renderizarTabela();
         atualizarStats();
       } catch (err) {
-        document.getElementById('emptyMsg').textContent = err.message || 'Erro ao carregar pedidos.';
-        document.getElementById('emptyMsg').style.display = 'block';
+        mostrarFalha(err.message || 'Erro ao carregar pedidos.');
       } finally {
         document.getElementById('loadingMsg').style.display = 'none';
       }
     }
-
-    document.getElementById('btnRefresh').addEventListener('click', carregarPedidos);
-    document.getElementById('btnVoltarSite').addEventListener('click', () => {
-      window.location.href = 'index.html';
-    });
-    document.querySelectorAll('.adm-filter-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.adm-filter-btn').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        filtroAtual = btn.dataset.filter;
-        renderizarTabela();
-      });
-    });
 
     carregarPedidos();
   </script>
