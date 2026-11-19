@@ -111,7 +111,7 @@
     });
 
     const user = await exigirRole('admin');
-    if (!user) return;
+    if (!user) throw new Error('Acesso negado');
 
     const STATUS = ['PENDENTE', 'PAGO', 'CONFIRMADO', 'PREPARANDO', 'ENVIADO', 'ENTREGUE', 'CANCELADO'];
     const pagosSet = new Set(['PAGO', 'CONFIRMADO', 'RECEIVED', 'CONFIRMED']);
